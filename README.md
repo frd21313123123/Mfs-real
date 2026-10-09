@@ -1,4 +1,4 @@
-# RealFlow Traffic 0.1.0
+# RealFlow Traffic 0.2.0 alpha
 
 [![CI](https://github.com/frd21313123123/Mfs-real/actions/workflows/ci.yml/badge.svg)](https://github.com/frd21313123123/Mfs-real/actions/workflows/ci.yml) [![Windows prototype](https://github.com/frd21313123123/Mfs-real/actions/workflows/windows-exe.yml/badge.svg)](https://github.com/frd21313123123/Mfs-real/actions/workflows/windows-exe.yml)
 
@@ -6,6 +6,13 @@
 
 > **CURRENT STATUS: ENGINE PROTOTYPE, NOT A STABLE MSFS PLUGIN.**
 > All automated tests have run in the offline mock, but **native SimConnect integration, positioning of FSLTL aircraft, taxi animations and airport motion have NOT been tested in MSFS 2020**. Do not call this a working game release yet.
+
+
+## Integrated ATC prototype (0.2.0 alpha)
+
+The experimental [integrated ATC flight director and pilot radio](docs/ATC-INTEGRATED.md) now coordinates synthetic AI airborne clearances, ground pushback/taxi and runway locking, and a continuous human-pilot radio console. Native SimConnect movement and cockpit COM/XPDR must still be verified inside MSFS 2020. LIVE ADS-B traffic is observational, not controllable.
+
+The bundled Windows Actions artifact is designed to contain two prototypes: the offline Tkinter UI and a console RealFlowTraffic-ATC.exe. Windows packaging must pass CI before any playable release claim. An offline integration smoke is available with: python -m realflow.atc_demo --steps 600.
 
 ## What's actually implemented
 
