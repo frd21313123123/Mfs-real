@@ -1,0 +1,31 @@
+{
+  "status": "passed",
+  "engine": "Microsoft Edge / Chromium",
+  "flypadRuntime": "not_tested",
+  "fenixCockpit": "not_tested",
+  "viewports": [
+    [
+      1430,
+      1000
+    ],
+    [
+      2028,
+      1536
+    ],
+    [
+      760,
+      900
+    ]
+  ],
+  "checks": [
+    "ICAO validation",
+    "six aircraft",
+    "probe has no calculated values",
+    "PDF page image",
+    "Fenix display disclosure and default profile",
+    "embedded flyPad layout preview",
+    "responsive width",
+    "reconnection"
+  ],
+  "pageErrors": []
+}

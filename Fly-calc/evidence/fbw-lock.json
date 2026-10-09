@@ -1,0 +1,10 @@
+{
+  "msfs2020": {
+    "branch": "fs2020-master",
+    "sha": "672384b9602a84d6832b8852cd6ec0abdd006f85"
+  },
+  "msfs2024": {
+    "branch": "master",
+    "sha": "255546cb02db1c7b40d2505ac621a9d36748d258"
+  }
+}

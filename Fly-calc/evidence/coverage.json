@@ -1,0 +1,597 @@
+{
+  "auditDate": "2026-10-09",
+  "worldRoutingReady": false,
+  "ourairports": {
+    "totalRecords": 86226,
+    "activeUniqueFourLetterIcao": 10531,
+    "countries": 247,
+    "continents": {
+      "NA": 39820,
+      "OC": 4249,
+      "AF": 4247,
+      "AN": 46,
+      "SA": 12418,
+      "EU": 12624,
+      "AS": 12822
+    },
+    "runwayRecords": 48330,
+    "navaidRecords": 11008,
+    "orphanRunwayRecords": 0,
+    "duplicateIcaoCodes": {},
+    "activeIcaoAirportsWithoutRunwayRecords": 2170,
+    "airacCycle": null,
+    "license": "Public domain",
+    "waypointsAirwaysProcedures": false
+  },
+  "flightgear": {
+    "cycleByFile": {
+      "fix.dat.gz": "2013.10",
+      "nav.dat.gz": "2013.10",
+      "awy.dat.gz": "2013.10"
+    },
+    "counts": {
+      "fix.dat.gz": 119720,
+      "nav.dat.gz": 26771
+    },
+    "airwaySegments": 70285,
+    "uniqueAirwayNames": 7344,
+    "uniqueAirwayFieldLabels": 9200,
+    "duplicateFixIdentifiers": 3624,
+    "duplicateFixExamples": [
+      {
+        "ident": "W",
+        "occurrences": 11
+      },
+      {
+        "ident": "N",
+        "occurrences": 10
+      },
+      {
+        "ident": "S",
+        "occurrences": 10
+      },
+      {
+        "ident": "BRAVO",
+        "occurrences": 9
+      },
+      {
+        "ident": "DELTA",
+        "occurrences": 9
+      },
+      {
+        "ident": "E",
+        "occurrences": 9
+      },
+      {
+        "ident": "WA",
+        "occurrences": 9
+      },
+      {
+        "ident": "TANGO",
+        "occurrences": 8
+      },
+      {
+        "ident": "ALPHA",
+        "occurrences": 7
+      },
+      {
+        "ident": "CORAL",
+        "occurrences": 7
+      }
+    ],
+    "coordinateKeyDecimals": 4,
+    "unresolvedAirwaySegments": 16528,
+    "unresolvedExamples": [
+      {
+        "start": [
+          "04THT",
+          73.1478,
+          -68.6831
+        ],
+        "end": [
+          "JULET",
+          72.7617,
+          -68.6583
+        ],
+        "airway": "5E42-BR20"
+      },
+      {
+        "start": [
+          "1F",
+          47.6306,
+          -65.7447
+        ],
+        "end": [
+          "CL",
+          48.0089,
+          -66.4369
+        ],
+        "airway": "BR25"
+      },
+      {
+        "start": [
+          "1F",
+          47.6306,
+          -65.7447
+        ],
+        "end": [
+          "F9",
+          47.01,
+          -65.4675
+        ],
+        "airway": "BR25"
+      },
+      {
+        "start": [
+          "38TBD",
+          25.7407,
+          -95.399
+        ],
+        "end": [
+          "MAHEE",
+          27.3476,
+          -93.5878
+        ],
+        "airway": "A552"
+      },
+      {
+        "start": [
+          "4850N",
+          48.0,
+          -50.0
+        ],
+        "end": [
+          "YQX",
+          48.8997,
+          -54.5349
+        ],
+        "airway": "5E57"
+      },
+      {
+        "start": [
+          "4950N",
+          49.0,
+          -50.0
+        ],
+        "end": [
+          "YQX",
+          48.8997,
+          -54.5349
+        ],
+        "airway": "5E54"
+      },
+      {
+        "start": [
+          "5050N",
+          50.0,
+          -50.0
+        ],
+        "end": [
+          "YQX",
+          48.8997,
+          -54.5349
+        ],
+        "airway": "5E56"
+      },
+      {
+        "start": [
+          "5150N",
+          51.0,
+          -50.0
+        ],
+        "end": [
+          "YQX",
+          48.8997,
+          -54.5349
+        ],
+        "airway": "5E53"
+      }
+    ],
+    "invalidAltitudeRanges": 0,
+    "airwayTypeCounts": {
+      "1": 37192,
+      "2": 33093
+    },
+    "directionEncoding": "Legacy XP640 records have no explicit per-edge direction field. Do not infer current one-way restrictions.",
+    "invalidRecords": 0,
+    "dataLicense": "GPL-2.0-or-later, explicitly stated in all three dataset headers",
+    "proceduresAudited": false,
+    "worldProceduresConfirmed": false
+  },
+  "faa": {
+    "status": "inventoried",
+    "archive": "CIFP_260903.zip",
+    "rejectedDownloads": [
+      {
+        "file": "CIFP_261001.zip",
+        "error": "File is not a zip file"
+      }
+    ],
+    "file": "FAACIFP18",
+    "recordCount": 396816,
+    "recordCategories": {
+      "AS": 241,
+      "D ": 2084,
+      "DB": 382,
+      "EA": 32457,
+      "ER": 19393,
+      "HA": 6151,
+      "PA": 13307,
+      "PG": 16879,
+      "PE": 44563,
+      "PC": 37628,
+      "PD": 34294,
+      "PF": 128924,
+      "PS": 6046,
+      "PP": 9818,
+      "PI": 1279,
+      "UC": 13135,
+      "UR": 29994,
+      "P ": 183,
+      "HD": 15,
+      "HS": 5,
+      "HC": 9,
+      "HF": 24
+    },
+    "areaCodes": {
+      "   ": 241,
+      "CAN": 18125,
+      "EEU": 12,
+      "LAM": 1312,
+      "PAC": 5120,
+      "SPA": 121,
+      "USA": 371880
+    },
+    "datasetCycle": "2609",
+    "recordLastChangeCycles": {
+      "1703": 36263,
+      "2609": 5506,
+      "2506": 6894,
+      "2310": 3472,
+      "2309": 1021,
+      "2304": 6180,
+      "2001": 97,
+      "1713": 3084,
+      "2105": 748,
+      "2512": 5758,
+      "2605": 61478,
+      "1711": 1857,
+      "2106": 2398,
+      "2014": 3900,
+      "2002": 1907,
+      "2108": 2202,
+      "2010": 3924,
+      "1710": 330,
+      "1605": 207,
+      "2607": 5836,
+      "1712": 103,
+      "2201": 3339,
+      "2110": 4700,
+      "2308": 2572,
+      "2008": 3360,
+      "1810": 2103,
+      "2312": 3568,
+      "1812": 3334,
+      "2407": 5097,
+      "1612": 2329,
+      "1902": 136,
+      "2505": 679,
+      "2513": 199,
+      "2012": 2659,
+      "2409": 3116,
+      "2301": 210,
+      "2307": 452,
+      "2302": 2346,
+      "2508": 3971,
+      "2601": 2572,
+      "1705": 1315,
+      "2209": 2838,
+      "1708": 73,
+      "1909": 1171,
+      "1808": 2495,
+      "2510": 4643,
+      "1802": 2096,
+      "2109": 376,
+      "1806": 3222,
+      "2112": 3149,
+      "2306": 2646,
+      "1608": 807,
+      "2602": 158,
+      "1606": 1281,
+      "2504": 15965,
+      "2203": 3276,
+      "2606": 252,
+      "2403": 8738,
+      "2608": 259,
+      "2405": 10720,
+      "2104": 3033,
+      "1709": 2286,
+      "2213": 2711,
+      "2411": 4370,
+      "2413": 2438,
+      "1804": 1137,
+      "2211": 3442,
+      "1805": 71,
+      "1813": 120,
+      "2013": 361,
+      "1904": 53,
+      "2007": 490,
+      "2511": 366,
+      "2004": 2125,
+      "2404": 746,
+      "2401": 4035,
+      "2107": 541,
+      "2603": 5189,
+      "2408": 1097,
+      "1809": 543,
+      "2111": 477,
+      "2305": 190,
+      "2412": 585,
+      "2311": 511,
+      "2410": 1573,
+      "2011": 394,
+      "2113": 1246,
+      "2207": 4332,
+      "1911": 2529,
+      "2006": 2690,
+      "1204": 200,
+      "2604": 247,
+      "2205": 3614,
+      "1913": 1483,
+      "2204": 986,
+      "1310": 14486,
+      "1807": 297,
+      "1707": 1908,
+      "1613": 11,
+      "1208": 695,
+      "0913": 125,
+      "1901": 1379,
+      "2210": 1081,
+      "1210": 719,
+      "1303": 665,
+      "1410": 910,
+      "1311": 498,
+      "1907": 1347,
+      "1212": 443,
+      "2009": 798,
+      "1406": 850,
+      "1002": 189,
+      "0911": 164,
+      "1301": 364,
+      "1702": 1195,
+      "2502": 2106,
+      "1408": 605,
+      "1206": 705,
+      "1411": 29,
+      "1602": 638,
+      "1512": 338,
+      "1412": 1226,
+      "0804": 3102,
+      "1511": 688,
+      "1513": 821,
+      "1601": 33,
+      "0808": 218,
+      "0812": 126,
+      "1501": 600,
+      "1507": 681,
+      "0810": 329,
+      "0910": 129,
+      "0805": 198,
+      "2402": 873,
+      "1308": 444,
+      "2206": 636,
+      "1113": 580,
+      "2102": 3637,
+      "0901": 119,
+      "2103": 994,
+      "2303": 334,
+      "1306": 27,
+      "2503": 1013,
+      "1305": 413,
+      "0909": 397,
+      "1803": 153,
+      "1404": 520,
+      "1610": 812,
+      "1006": 285,
+      "1504": 181,
+      "1903": 1435,
+      "1505": 604,
+      "1202": 456,
+      "2313": 308,
+      "2003": 86,
+      "1304": 102,
+      "1307": 310,
+      "0806": 121,
+      "1604": 1154,
+      "1109": 763,
+      "1611": 410,
+      "1309": 565,
+      "1905": 1736,
+      "1107": 398,
+      "1313": 418,
+      "1213": 108,
+      "1004": 180,
+      "1811": 311,
+      "1910": 153,
+      "1912": 178,
+      "2507": 178,
+      "1101": 176,
+      "1012": 79,
+      "1010": 384,
+      "1201": 118,
+      "1105": 384,
+      "1402": 315,
+      "1706": 332,
+      "2212": 347,
+      "2005": 90,
+      "1005": 23,
+      "2406": 1436,
+      "2202": 912,
+      "0912": 36,
+      "1103": 117,
+      "1509": 388,
+      "1908": 39,
+      "2101": 1087,
+      "1211": 176,
+      "2208": 1224,
+      "2501": 533,
+      "1801": 49,
+      "1906": 58,
+      "2509": 203,
+      "1508": 13,
+      "0904": 11,
+      "0907": 203,
+      "1502": 145,
+      "1510": 46,
+      "1008": 265,
+      "1003": 48,
+      "1403": 111,
+      "0109": 18,
+      "1503": 363,
+      "1011": 5,
+      "1603": 63,
+      "1106": 105,
+      "1111": 391,
+      "1007": 48,
+      "0905": 174,
+      "1506": 62,
+      "1112": 62,
+      "1704": 450,
+      "0908": 7,
+      "0903": 187,
+      "1203": 176,
+      "1609": 81,
+      "0811": 5,
+      "1110": 15,
+      "1312": 66,
+      "1607": 107,
+      "0809": 6,
+      "1205": 193,
+      "1102": 25,
+      "0807": 13,
+      "0906": 51,
+      "1108": 9,
+      "1409": 191,
+      "1407": 42,
+      "1009": 11,
+      "1405": 28,
+      "1413": 126,
+      "1104": 37,
+      "1013": 20,
+      "1401": 145,
+      "1209": 163,
+      "1302": 99,
+      "1207": 221,
+      "1001": 1,
+      "0813": 9,
+      "0902": 1,
+      "0802": 1
+    },
+    "airportCount": 13307,
+    "uniqueProcedureNamesByAirportRegion": {
+      "PD": 2190,
+      "PE": 1916,
+      "PF": 10232
+    },
+    "runwayRecords": 16879,
+    "explicitRunwayTransitions": 1219,
+    "unmatchedExplicitRunwayTransitions": 4,
+    "unmatchedExplicitRunwayExamples": [
+      [
+        "1K4",
+        "RW17"
+      ],
+      [
+        "1K4",
+        "RW35"
+      ],
+      [
+        "KORF",
+        "RW14"
+      ],
+      [
+        "KORF",
+        "RW32"
+      ]
+    ],
+    "samplePresence": {
+      "Europe": false,
+      "Russia": false,
+      "North America": true,
+      "Asia": false,
+      "Africa": false,
+      "South America": false,
+      "Oceania": false
+    },
+    "procedureSemanticsDecoded": false,
+    "note": "Record categories only; not validation of complete ARINC legs, transitions, minima or procedure/runway associations."
+  },
+  "regionalSmokeChecks": {
+    "Europe": {
+      "icao": "EGLL",
+      "name": "London Heathrow Airport",
+      "country": "GB",
+      "runwayRecords": 2,
+      "enroutePointsIn2DegreeBox": 1070,
+      "airwaySegmentsWithEndpointInBox": 571
+    },
+    "Russia": {
+      "icao": "UUEE",
+      "name": "Sheremetyevo International Airport",
+      "country": "RU",
+      "runwayRecords": 3,
+      "enroutePointsIn2DegreeBox": 276,
+      "airwaySegmentsWithEndpointInBox": 176
+    },
+    "North America": {
+      "icao": "KJFK",
+      "name": "John F. Kennedy International Airport",
+      "country": "US",
+      "runwayRecords": 4,
+      "enroutePointsIn2DegreeBox": 3162,
+      "airwaySegmentsWithEndpointInBox": 786
+    },
+    "Asia": {
+      "icao": "RJTT",
+      "name": "Tokyo Haneda International Airport",
+      "country": "JP",
+      "runwayRecords": 4,
+      "enroutePointsIn2DegreeBox": 368,
+      "airwaySegmentsWithEndpointInBox": 322
+    },
+    "Africa": {
+      "icao": "FAOR",
+      "name": "O.R. Tambo International Airport",
+      "country": "ZA",
+      "runwayRecords": 2,
+      "enroutePointsIn2DegreeBox": 158,
+      "airwaySegmentsWithEndpointInBox": 132
+    },
+    "South America": {
+      "icao": "SBGR",
+      "name": "São Paulo/Guarulhos–Governor André Franco Montoro International Airport",
+      "country": "BR",
+      "runwayRecords": 2,
+      "enroutePointsIn2DegreeBox": 109,
+      "airwaySegmentsWithEndpointInBox": 134
+    },
+    "Oceania": {
+      "icao": "YSSY",
+      "name": "Sydney Kingsford Smith International Airport",
+      "country": "AU",
+      "runwayRecords": 3,
+      "enroutePointsIn2DegreeBox": 388,
+      "airwaySegmentsWithEndpointInBox": 180
+    }
+  },
+  "compatibility": {
+    "mergedNavigationDatabase": false,
+    "blockingIssues": [
+      "OurAirports has no AIRAC cycle or procedure-runway links",
+      "FlightGear cycle 2013.10 differs from FAA 2609 and current airport records",
+      "Legacy fixes lack ICAO region keys; names are not globally unique",
+      "No confirmed free global SID/STAR/approach dataset",
+      "Legacy airway directions and current RAD/NOTAM constraints not established"
+    ]
+  }
+}
