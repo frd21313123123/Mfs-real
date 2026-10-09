@@ -63,6 +63,7 @@ class AIFlightDirector:
         self.min_vertical_sep_ft = min_vertical_sep_ft
         self.tracks: dict[str, ControlledFlight] = {}
         self.lines: list[RadioLine] = []
+        self.arrivals: list = []
         self.clock = 0.0
 
     def _radio(self, flight_id: str, station: str, instruction: str,
@@ -108,9 +109,9 @@ class AIFlightDirector:
         self._radio(f.id, "center", "radar contact, maintain present altitude",
                     "maintaining present altitude")
 
-    def forget(self, id: str):
+    def forget(self, id: str, keep_runway: bool = False):
         t = self.tracks.pop(id, None)
-        if t is not None and t.owns_runway:
+        if t is not None and t.owns_runway and not keep_runway:
             self.runways.release(self.runway_id, id)
 
     def _guidance(self, f, others) -> FlightClearance:
@@ -124,7 +125,7 @@ class AIFlightDirector:
         altitude = max(current.alt_ft, 1500.0)
         station = "center"
 
-        if self.airport_position is not None and self.runway_id:
+        if self.airport_position is not None and self.runway_id and getattr(f, 'arrival', False):
             dist = distance_m(current, self.airport_position)
             route_heading = bearing_deg(current, self.airport_position)
             if dist <= 45000:
@@ -150,7 +151,7 @@ class AIFlightDirector:
                     altitude = max(current.alt_ft + 1200, self.airport_elevation_ft + 4000)
                     route_heading = (current.heading + 45) % 360
                     speed = 195
-            if t.owns_runway and dist < 600 and current.alt_ft <= self.airport_elevation_ft + 180:
+            if t.owns_runway and dist < 100 and current.alt_ft <= self.airport_elevation_ft + 180:
                 t.completed = True
                 phase = "landed"
                 altitude = self.airport_elevation_ft
@@ -209,10 +210,14 @@ class AIFlightDirector:
             clearance = self._guidance(f, snapshot)
             self._move(f, clearance, dt)
             if self.tracks[f.id].completed:
-                # A completed AI object must not retain runway ownership.
-                # Ground arrival handoff is handled by its caller.
-                self.forget(f.id)
+                # Defer releasing runway until GroundEngine takes ownership.
+                self.arrivals.append(f)
                 aircraft.pop(f.id, None)
+
+    def take_arrivals(self) -> list:
+        arrivals = self.arrivals
+        self.arrivals = []
+        return arrivals
 
     def close(self):
         for id in list(self.tracks):
