@@ -25,7 +25,7 @@ fn airport_codes_are_normalized_and_validated() {
 fn cfg_path_picks_active_msfs_install_and_handles_spaces() {
     let data = "SomeSetting 1\nInstalledPackagesPath \"D:\\MSFS 2020\\Packages\"\n";
     assert_eq!(
-        community_from_usercfg(data).unwrap().to_string_lossy(),
+        community_from_usercfg(data).unwrap(),
         std::path::PathBuf::from(r"D:\MSFS 2020\Packages").join("Community")
     );
     assert!(community_from_usercfg("SomeSetting 1").is_none());
