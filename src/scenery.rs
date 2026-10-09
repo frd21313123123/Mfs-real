@@ -126,12 +126,11 @@ pub fn detect_community() -> Option<PathBuf> {
         );
     }
     for cfg in &config_paths {
-        if let Ok(data) = fs::read_to_string(cfg) {
-            if let Some(path) = community_from_usercfg(&data) {
-                if path.is_dir() {
-                    return Some(path);
-                }
-            }
+        if let Ok(data) = fs::read_to_string(cfg)
+            && let Some(path) = community_from_usercfg(&data)
+            && path.is_dir()
+        {
+            return Some(path);
         }
     }
     // Fallbacks only when the game did not provide an installed-packages path.
