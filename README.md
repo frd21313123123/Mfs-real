@@ -184,3 +184,54 @@ For planned flight dynamics, weather-driven runway selection, runway crossings, 
 - FSLTL base models: https://github.com/FSLiveTrafficLiveries/base
 
 This repository contains independently written prototype code only. No Microsoft SimConnect runtime, FSLTL aircraft models, liveries or proprietary airport scenery are redistributed. Use OpenSky according to its API terms and access credits.
+
+
+## Experimental ATC: voice, cockpit COM and RealFlow AI
+
+This ATC module provides a local, rule-based IFR radio simulation. **It does not connect to VATSIM or to any real controller**, and it is not a real-world aviation navigation aid.
+
+### Real-world frequency database
+
+Install the optional community-maintained OurAirports frequency list:
+
+    py -3 -m realflow.atc_cli update
+    py -3 -m realflow.atc_cli frequencies --icao UUEE
+
+The downloaded file is stored in the current user's home directory under .realflow/airport-frequencies.csv. It is downloaded only on explicit request. Published frequencies are community records, not guaranteed current ATC services. Verify them against official AIP/NOTAM and airport charts. Missing frequencies are NOT fabricated, and airport sectors are not selected automatically.
+
+### Cockpit radios, not the transponder
+
+Use COM1/COM2 for voice communication. Use the transponder for the **squawk code only**. COM1 and COM2 active frequencies and selected transmitting radio, plus XPDR code, are read through experimental MSFS 2020 SimConnect variables.
+
+Start MSFS 2020, then run this ATC-only console:
+
+    py -3 -m realflow.atc_cli session --icao UUEE --destination ULLI --callsign AFL101 --runway 24L --cockpit
+
+Tune the station's frequency using the actual cockpit COM panel. Select COM1 or COM2 transmit on the aircraft audio panel. Request clearance, read back assigned altitude and squawk, enter squawk on the physical cockpit transponder, then switch frequencies on the COM panel after handoff. These are **simulated** clearances.
+
+For a typed, offline example without MSFS, replace --cockpit with --com1 121.900, using a published station frequency for the selected airport.
+
+### Real microphone voice, optional, with no paid APIs
+
+Install voice dependencies, and separately download a 16kHz English Vosk recognition model:
+
+    py -3 -m pip install vosk sounddevice pyttsx3
+    py -3 -m realflow.atc_cli session --icao UUEE --destination ULLI --callsign AFL101 --runway 24L --cockpit --voice --vosk-model "C:\models\vosk-model-en-us"
+
+Press Enter in the console to record approximately six seconds from the actual microphone (one push-to-talk message). Vosk performs offline speech recognition; pyttsx3 uses the Windows speaker/audio device for dispatcher speech. Pilot transmissions do not leave the PC. The recognition model and MSFS are not included in the project. Speech and voice quality must be validated on Windows.
+
+### AI pilots and ATC are linked to the Ground Engine
+
+RealFlow-owned AI ground traffic automatically exchanges request, clearance and readback messages before taxiway/runway operations. A shared RunwayController prevents issuing a conflicting runway operation to another managed plane. Missing controller frequencies do not silently turn into fictitious stations.
+
+Offline dialogue test (fictional airport graph, not MSFS movement):
+
+    py -3 -m realflow.atc_cli session --icao UUEE --destination ULLI --callsign AFL101 --runway 24L --ai-demo
+
+Use /tick 120 and /status to observe AI conversations and radio state. AI chatter is shown only when tuned to the corresponding frequency. The fictional airport geometry is never used for live game movement.
+
+Experimental live integration, using FSLTL and a VERIFIED custom airport graph:
+
+    py -3 -m realflow run --bridge simconnect --airport "C:\realflow\UUEE_verified.json" --atc-csv "C:\realflow\airport-frequencies.csv" --allow-motion
+
+**Known restrictions:** COM frequency readings, BCO16/transponder values, third-party cockpit audio panels, taxi/landing animations and native SimConnect controls need in-game verification. Bots currently comply with RealFlow ground/runway permissions, but synthetic aircraft in flight do not yet comply with ATC altitude, heading or spacing instructions. A separate ATC voice console is used; the in-sim ATC radio audio channel is not directly replaced. Real ADS-B aircraft are not controllable and do not actually receive clearances. This remains an experimental prototype, not a stable game release.
