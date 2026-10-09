@@ -39,6 +39,8 @@ class ControlledFlight:
     hold_until_s: float = 0.0
     completed: bool = False
     go_arounds: int = 0
+    go_around_heading: float | None = None
+    go_around_altitude_ft: float = 0.0
 
 
 class AIFlightDirector:
@@ -139,18 +141,22 @@ class AIFlightDirector:
                 if not t.owns_runway and self.clock >= t.hold_until_s:
                     if self.runways.reserve(self.runway_id, f.id, "arrival", self.clock):
                         t.owns_runway = True
+                        t.go_around_heading = None
                         self._radio(f.id, "tower",
                                     f"runway {self.runway_id}, cleared to land",
                                     f"runway {self.runway_id}, cleared to land")
                     else:
                         t.go_arounds += 1
                         t.hold_until_s = self.clock + 90
+                        t.go_around_heading = (current.heading + 45) % 360
+                        t.go_around_altitude_ft = max(current.alt_ft + 1500,
+                                                      self.airport_elevation_ft + 4000)
                         self._radio(f.id, "tower", "go around, runway occupied, climb 4000 feet",
                                     "going around, 4000 feet")
                 if not t.owns_runway:
                     phase, station = "go-around", "approach"
-                    altitude = max(current.alt_ft + 1200, self.airport_elevation_ft + 4000)
-                    route_heading = (current.heading + 45) % 360
+                    altitude = t.go_around_altitude_ft or (self.airport_elevation_ft + 4000)
+                    route_heading = t.go_around_heading if t.go_around_heading is not None else current.heading
                     speed = 195
             if t.owns_runway and dist < 100 and current.alt_ft <= self.airport_elevation_ft + 180:
                 t.completed = True
