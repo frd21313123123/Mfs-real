@@ -40,6 +40,8 @@ class GroundEngine:
         self.edge_owners:dict[frozenset[str],str]={}
         self.node_owners:dict[str,str]={}
         self.time=0.0
+        # Optional ATC permission gate; left unset for legacy/offline runs.
+        self.clearance_provider=None
 
     def add(self, aircraft_id:str, model_title:str, start:str, end:str, arrival=False) -> GroundAircraft:
         if len(self.aircraft)>=self.max_ground: raise ValueError('ground capacity exhausted')
@@ -90,6 +92,10 @@ class GroundEngine:
             return
         src,dst=plane.route[plane.cursor:plane.cursor+2]
         edge=self.airport.edges[(src,dst)]
+        if self.clearance_provider is not None and not self.clearance_provider(plane,edge):
+            plane.speed_mps=max(0,plane.speed_mps-2*dt)
+            plane.phase=Phase.HOLD_SHORT
+            return
         dest=self.airport.nodes[dst].position
         owner=self.edge_owners.get(frozenset((src,dst)))
         # At most one plane per bidirectional edge. Unlike optimistic reservations,
