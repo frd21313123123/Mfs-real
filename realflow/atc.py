@@ -50,6 +50,29 @@ def _contains_number(message: str, value: str | int) -> bool:
     return re.search(r"(?<!\d)" + re.escape(str(value)) + r"(?!\d)", message) is not None
 
 
+_DIGIT_NAMES = ("zero", "one", "two", "three", "four", "five", "six", "seven", "eight", "nine")
+_RUNWAY_SUFFIXES = {"l": "left", "r": "right", "c": "center"}
+
+
+def _readback_contains(message: str, expected: str) -> bool:
+    """Allow digit-by-digit and simple ICAO-style spoken numbers from Vosk."""
+    expected = expected.lower()
+    if _contains_number(message, expected) or _said(message, expected):
+        return True
+    match = re.fullmatch(r"(\d{1,4})([lrc])?", expected)
+    if not match:
+        return False
+    digits, suffix = match.groups()
+    aliases = [" ".join(_DIGIT_NAMES[int(digit)] for digit in digits)]
+    if len(digits) == 4 and digits.endswith("000"):
+        aliases.append(_DIGIT_NAMES[int(digits[0])] + " thousand")
+    if len(digits) == 2:
+        aliases.append({ "18": "eighteen", "24": "twenty four"}.get(digits, ""))
+    if suffix:
+        aliases = [a + " " + _RUNWAY_SUFFIXES[suffix] for a in aliases]
+    return any(a and _said(message, a) for a in aliases)
+
+
 class PilotATC:
     """IFR phraseology training; state advances only after required readbacks.
 
@@ -137,7 +160,7 @@ class PilotATC:
         assert pending is not None
         normalized = _normalized(message)
         missing = [term for term in pending.mandatory
-                   if not _contains_number(normalized, term) and not _said(normalized, term)]
+                   if not _readback_contains(normalized, term)]
         if missing:
             return self._say(station, "readback incorrect; missing " + ", ".join(missing) + ". Say again.", "correction")
         self.pending = None
