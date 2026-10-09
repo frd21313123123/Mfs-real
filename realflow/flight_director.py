@@ -65,6 +65,7 @@ class AIFlightDirector:
         self.lines: list[RadioLine] = []
         self.arrivals: list = []
         self.clock = 0.0
+        self.player_position: Position | None = None
 
     def _radio(self, flight_id: str, station: str, instruction: str,
                readback: str | None = None):
@@ -156,6 +157,16 @@ class AIFlightDirector:
                 phase = "landed"
                 altitude = self.airport_elevation_ft
                 speed = 120
+
+        # Give the real player priority: only our synthetic aircraft maneuvers.
+        player = self.player_position
+        if (player is not None and phase != 'landed' and
+                distance_m(current, player) < self.separation_m and
+                abs(current.alt_ft - player.alt_ft) < self.min_vertical_sep_ft):
+            route_heading = (current.heading + 40) % 360
+            altitude = max(altitude, current.alt_ft + 1400)
+            speed = min(speed, max(140, current.speed_kt - 35))
+            phase, station = 'vector', 'approach' if dist < 45000 else 'center'
 
         # Basic strategic conflict management among owned, synthetic aircraft.
         # Higher lexical ID yields to prevent symmetrical conflicting orders.
