@@ -1,0 +1,128 @@
+{
+  "version": "0.1.0",
+  "mode": "hybrid",
+  "model_origin": "demo fixture (not MSFS-usable)",
+  "duration_seconds": 600,
+  "limits": {
+    "air": 35,
+    "ground": 30
+  },
+  "traffic": {
+    "live": 1,
+    "synthetic": 8,
+    "ground": 0,
+    "objects": 9
+  },
+  "events": {
+    "creates": 16,
+    "updates": 5641
+  },
+  "active_before_shutdown": 9,
+  "phases": {
+    "0": {
+      "TEST101": "PUSHBACK",
+      "TEST102": "PUSHBACK"
+    },
+    "10": {
+      "TEST101": "PUSHBACK",
+      "TEST102": "PUSHBACK"
+    },
+    "20": {
+      "TEST101": "PUSHBACK",
+      "TEST102": "PUSHBACK"
+    },
+    "30": {
+      "TEST101": "PUSHBACK",
+      "TEST102": "TAXI_OUT"
+    },
+    "40": {
+      "TEST101": "PUSHBACK",
+      "TEST102": "TAXI_OUT"
+    },
+    "50": {
+      "TEST101": "TAXI_OUT",
+      "TEST102": "TAXI_OUT"
+    },
+    "60": {
+      "TEST101": "TAXI_OUT",
+      "TEST102": "TAXI_OUT"
+    },
+    "70": {
+      "TEST101": "TAXI_OUT",
+      "TEST102": "TAKEOFF"
+    },
+    "80": {
+      "TEST101": "TAXI_OUT",
+      "TEST102": "TAKEOFF"
+    },
+    "90": {
+      "TEST101": "HOLD_SHORT",
+      "TEST102": "TAKEOFF"
+    },
+    "100": {
+      "TEST101": "HOLD_SHORT",
+      "TEST102": "TAKEOFF"
+    },
+    "110": {
+      "TEST101": "TAKEOFF"
+    },
+    "120": {
+      "TEST101": "TAKEOFF"
+    },
+    "130": {
+      "TEST101": "TAKEOFF"
+    },
+    "140": {
+      "TEST101": "TAKEOFF"
+    },
+    "150": {
+      "TEST101": "TAKEOFF"
+    },
+    "160": {},
+    "170": {},
+    "180": {},
+    "190": {},
+    "200": {},
+    "210": {},
+    "220": {},
+    "230": {},
+    "240": {},
+    "250": {},
+    "260": {},
+    "270": {},
+    "280": {},
+    "290": {},
+    "300": {},
+    "310": {},
+    "320": {},
+    "330": {},
+    "340": {},
+    "350": {},
+    "360": {},
+    "370": {},
+    "380": {},
+    "390": {},
+    "400": {},
+    "410": {},
+    "420": {},
+    "430": {},
+    "440": {},
+    "450": {},
+    "460": {},
+    "470": {},
+    "480": {},
+    "490": {},
+    "500": {},
+    "510": {},
+    "520": {},
+    "530": {},
+    "540": {},
+    "550": {},
+    "560": {},
+    "570": {},
+    "580": {},
+    "590": {}
+  },
+  "runway_reservations": {},
+  "clean_shutdown": true
+}

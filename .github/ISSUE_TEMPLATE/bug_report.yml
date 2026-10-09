@@ -1,0 +1,27 @@
+name: Bug report
+description: Report a RealFlow Traffic issue
+title: '[Bug] '
+labels: ['bug']
+body:
+  - type: textarea
+    id: issue
+    attributes:
+      label: What happened?
+      description: Include expected versus actual behavior.
+    validations:
+      required: true
+  - type: input
+    id: version
+    attributes:
+      label: Version or commit
+    validations:
+      required: true
+  - type: dropdown
+    id: environment
+    attributes:
+      label: Test environment
+      options: ['Offline/mock', 'MSFS 2020 with FSLTL', 'Other']
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs and reproduction steps
