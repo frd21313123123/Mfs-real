@@ -23,6 +23,7 @@ pub struct SceneryPanel {
     status: String,
     events: Option<mpsc::Receiver<Event>>,
     cancel: Arc<AtomicBool>,
+    downloading: bool,
 }
 
 impl Default for SceneryPanel {
@@ -41,6 +42,7 @@ impl Default for SceneryPanel {
             status: "Выберите ICAO и нажмите «Скачать и установить»".into(),
             events: None,
             cancel: Arc::new(AtomicBool::new(false)),
+            downloading: false,
         }
     }
 }
@@ -77,6 +79,7 @@ impl SceneryPanel {
         let cancel = Arc::clone(&self.cancel);
         let (tx, rx) = mpsc::channel();
         self.events = Some(rx);
+        self.downloading = true;
         self.status = format!("Поиск готового ZIP-релиза: {}", item.name);
         std::thread::spawn(move || {
             let result = scenery::download_and_install(&item, &target, &cancel, |count| {
@@ -100,6 +103,7 @@ impl SceneryPanel {
         };
         let (tx, rx) = mpsc::channel();
         self.events = Some(rx);
+        self.downloading = false;
         self.status = format!("Установка из ZIP: {}", zip.display());
         std::thread::spawn(move || {
             let result =
@@ -121,6 +125,7 @@ impl SceneryPanel {
                 }
                 Event::Done(result) => {
                     self.events = None;
+                    self.downloading = false;
                     self.status = match result {
                         Ok(packages) => format!(
                             "Установлено: {}. Перезапустите MSFS 2020.",
@@ -166,7 +171,7 @@ impl SceneryPanel {
             });
             if let Some(error) = &self.error { ui.colored_label(egui::Color32::RED, error); }
             ui.label(&self.status);
-            if self.events.is_some() && ui.button("Отменить загрузку").clicked() {
+            if self.downloading && self.events.is_some() && ui.button("Отменить загрузку").clicked() {
                 self.cancel.store(true, Ordering::Relaxed);
                 self.status = "Запрошена отмена…".into();
             }
