@@ -121,3 +121,25 @@ def test_arrival_handoff_only_with_validated_near_runway(matcher,graph):
         assert sum(e[0]=="create" and e[1]=="SYN-ARR" for e in bridge.events)==1
     finally:
         manager.close()
+
+
+
+def test_go_around_heading_remains_stable_outside_final_radius():
+    airport=Position(47,-122,450)
+    start=forward(airport,180,8500)
+    ac=flight("SYN-204GO",Position(start.lat,start.lon,2500,0,180),airport,True)
+    runways=RunwayController()
+    runways.reserve("RWY18","PLAYER","departure")
+    director=AIFlightDirector({"approach":120.4,"tower":118.7},
+                               runways,"RWY18",450,airport)
+    director.tick({ac.id:ac},1)
+    heading=director.tracks[ac.id].go_around_heading
+    assert heading is not None
+    # Move the plane outside the trigger radius while the clearance remains in force.
+    far=forward(airport,180,12000)
+    ac.position=Position(far.lat,far.lon,3000,0,180,False)
+    director.tick({ac.id:ac},1)
+    clearance=director.tracks[ac.id].clearance
+    assert clearance.phase=="go-around"
+    assert clearance.heading_deg==heading
+    director.close()
