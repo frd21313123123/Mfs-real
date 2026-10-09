@@ -1,0 +1,30 @@
+{
+  "name": "fly-calc-research",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Local feasibility prototype for Fly-calc and the FlyByWire flyPad",
+  "engines": {
+    "node": ">=24.13.0"
+  },
+  "scripts": {
+    "start": "node src/server.mjs",
+    "test": "node --test tests/*.test.mjs",
+    "check": "node scripts/check.mjs",
+    "build": "node scripts/build.mjs",
+    "desktop": "electron src/desktop.cjs",
+    "audit:data": "python scripts/audit_data.py",
+    "patches": "python scripts/generate_fbw_patches.py"
+  },
+  "dependencies": {
+    "react": "17.0.2",
+    "react-dom": "17.0.2"
+  },
+  "devDependencies": {
+    "@types/react": "17.0.93",
+    "@types/react-dom": "17.0.26",
+    "electron": "44.7.0",
+    "esbuild": "0.28.2",
+    "typescript": "5.9.3"
+  }
+}

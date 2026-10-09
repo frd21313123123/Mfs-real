@@ -1,0 +1,16 @@
+node_modules/
+data/raw/
+data/research.sqlite*
+evidence/upstream/
+evidence/environment.json
+output/
+tmp/
+*.log
+.local/
+public/app.js
+public/app.css
+__pycache__/
+*.py[cod]
+.env
+.env.*
+!.env.example
