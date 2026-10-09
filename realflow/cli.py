@@ -115,7 +115,19 @@ def run(args):
         if args.bridge=='simconnect' and not args.allow_motion:
             raise RuntimeError('Ground movement requires --allow-motion; airport JSON must be VERIFIED against in-sim airport')
         airport=GroundEngine(AirportGraph.from_json(args.airport),max_ground=settings.ground_limit)
-    manager=TrafficManager(settings,ModelMatcher(models),bridge,airport)
+    ai_atc=None
+    if args.atc_csv:
+        if not airport:
+            raise ValueError('--atc-csv requires --airport with validated taxi graph')
+        from .frequencies import FrequencyDirectory
+        from .atc import AIAirportController
+        directory=FrequencyDirectory.load(args.atc_csv)
+        stations=directory.primary(airport.airport.icao)
+        if not stations.get('ground') or not stations.get('tower'):
+            raise ValueError('No published GROUND/TOWER frequencies for this airport; AI ATC cannot start')
+        ai_atc=AIAirportController(stations,airport.runways)
+        print('AI ATC enabled using community frequency records; verify against AIP.')
+    manager=TrafficManager(settings,ModelMatcher(models),bridge,airport,ai_atc=ai_atc)
     live=OpenSkyClient(minimum_interval=settings.fetch_seconds) if settings.sync_real_flights and settings.mode!='simulation' else None
     metadata=AircraftMetadata.from_csv(args.metadata) if args.metadata else None
     last=time.monotonic();started=last;next_fetch=0.0
@@ -199,6 +211,7 @@ def main(argv=None):
     p.add_argument('--alt-ft',type=float,default=10000)
     p.add_argument('--airport',help='Verified airport graph JSON file, no automatic extraction yet')
     p.add_argument('--metadata',help='Optional CSV with icao24,icao_type model metadata')
+    p.add_argument('--atc-csv',help='Enable AI Ground/Tower ATC using local OurAirports frequencies CSV; requires --airport')
     p.add_argument('--duration',type=float,default=0,help='Seconds to run, 0 = indefinite')
     p.add_argument('--follow-user',action='store_true',default=True)
     p.set_defaults(handler=run)
