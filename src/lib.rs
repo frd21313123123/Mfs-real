@@ -8,6 +8,10 @@ pub mod engine;
 pub mod geo;
 #[cfg(feature = "gui")]
 pub mod launcher;
+#[cfg(feature = "gui")]
+pub mod scenery;
+#[cfg(feature = "gui")]
+pub mod scenery_ui;
 pub mod sources;
 #[cfg(feature = "gui")]
 pub mod traffic_download;

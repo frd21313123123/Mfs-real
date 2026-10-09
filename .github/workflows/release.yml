@@ -16,7 +16,7 @@ jobs:
     runs-on: ${{ matrix.os }}
     timeout-minutes: 35
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Check release version
         shell: bash
         env:
@@ -38,7 +38,7 @@ jobs:
         if: runner.os == 'Windows'
         shell: pwsh
         run: ./scripts/build.ps1
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: release-${{ runner.os }}
           path: |
