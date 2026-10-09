@@ -235,3 +235,6 @@ Experimental live integration, using FSLTL and a VERIFIED custom airport graph:
     py -3 -m realflow run --bridge simconnect --airport "C:\realflow\UUEE_verified.json" --atc-csv "C:\realflow\airport-frequencies.csv" --allow-motion
 
 **Known restrictions:** COM frequency readings, BCO16/transponder values, third-party cockpit audio panels, taxi/landing animations and native SimConnect controls need in-game verification. Bots currently comply with RealFlow ground/runway permissions, but synthetic aircraft in flight do not yet comply with ATC altitude, heading or spacing instructions. A separate ATC voice console is used; the in-sim ATC radio audio channel is not directly replaced. Real ADS-B aircraft are not controllable and do not actually receive clearances. This remains an experimental prototype, not a stable game release.
+
+
+Add the optional switch **--atc-voice** to speak ground/tower traffic over Windows speakers. Radio audio is filtered by the active COM transmit frequency read from the cockpit and runs off the simulation thread. Install pyttsx3 first. For a headless mock, --atc-monitor-frequency 118.700 can provide the monitored channel. This does not send audio over VATSIM or use the simulator's internal audio bus.
