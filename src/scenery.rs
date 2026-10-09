@@ -1,6 +1,8 @@
 //! Opt-in catalogue of author-hosted freeware scenery for MSFS 2020.
 //! Only ZIP assets from allowlisted GitHub release repositories are downloaded.
-use anyhow::{Context, Result, bail, ensure};
+use anyhow::{Context, Result, ensure};
+#[cfg(not(windows))]
+use anyhow::bail;
 use serde::Deserialize;
 use std::{
     fs,
@@ -158,12 +160,13 @@ pub fn download_and_install(
     output.flush()?;
     drop(output);
     ensure!(downloaded > 0, "Сервер вернул пустой архив");
+    ensure!(!cancel.load(Ordering::Relaxed), "Загрузка отменена");
     install_from_archive_with_stage(&archive, target, stage.path())
 }
 
 pub fn install_local_zip(archive: &Path, target: &Path) -> Result<Vec<String>> {
     ensure!(archive.is_file(), "ZIP-файл не найден");
-    ensure!(archive.extension().is_some_and(|x| x.eq_ignore_ascii_case("zip")), "Поддерживается только ZIP");
+    ensure!(archive.extension().and_then(|x| x.to_str()).is_some_and(|x| x.eq_ignore_ascii_case("zip")), "Поддерживается только ZIP");
     ensure!(archive.metadata()?.len() <= 1_073_741_824, "Архив превышает 1 ГБ");
     let stage = make_stage(target)?;
     install_from_archive_with_stage(archive, target, stage.path())
