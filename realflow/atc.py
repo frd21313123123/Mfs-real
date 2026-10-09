@@ -81,7 +81,8 @@ class PilotATC:
     """
     def __init__(self, callsign: str, origin: str, destination: str,
                  frequencies: dict[str, float], runway: str,
-                 runways: RunwayController | None = None, altitude_ft: int = 5000):
+                 runways: RunwayController | None = None, altitude_ft: int = 5000,
+                 runway_key: str | None = None):
         self.callsign = callsign.upper().strip()
         self.origin = origin.upper().strip()
         self.destination = destination.upper().strip()
@@ -92,6 +93,7 @@ class PilotATC:
         if not runway.strip():
             raise ValueError("Runway must be specified")
         self.runway = runway.upper()
+        self.runway_key = runway_key or self.runway
         self.frequencies = {s.lower(): round(float(v), 3) for s, v in frequencies.items()
                             if 118 <= float(v) <= 136.99}
         self.runways = runways if runways is not None else RunwayController()
@@ -201,7 +203,7 @@ class PilotATC:
         if self.stage == "taxi" and active == "tower" and _said(text, "ready", "departure", *_WORDS["takeoff"]):
             if self.actual_squawk is not None and self.actual_squawk != self.squawk:
                 return self._say(active, f"check transponder, squawk {self.squawk}.", "correction")
-            if not self.runways.reserve(self.runway, self.callsign, "departure"):
+            if not self.runways.reserve(self.runway_key, self.callsign, "departure"):
                 return self._say(active, f"hold short runway {self.runway}, traffic on runway.", "hold")
             self._runway_owned = True
             return self._clear(active, f"runway {self.runway}, cleared for takeoff.",
@@ -220,7 +222,7 @@ class PilotATC:
             return self._clear(active, f"descend {self.altitude_ft} feet, cleared approach runway {self.runway}.",
                                "approach", (str(self.altitude_ft), self.runway.lower()), "approach")
         if self.stage == "approach" and active == "tower" and _said(text, *_WORDS["landing"], "final"):
-            if not self.runways.reserve(self.runway, self.callsign, "arrival"):
+            if not self.runways.reserve(self.runway_key, self.callsign, "arrival"):
                 return self._say(active, "go around, runway occupied. Maintain runway heading.", "go-around")
             self._runway_owned = True
             return self._clear(active, f"runway {self.runway}, cleared to land.",
@@ -234,7 +236,7 @@ class PilotATC:
 
     def _release_runway(self):
         if self._runway_owned:
-            self.runways.release(self.runway, self.callsign)
+            self.runways.release(self.runway_key, self.callsign)
             self._runway_owned = False
 
     def close(self):
@@ -290,13 +292,15 @@ class AIAirportController:
         operation = "landing" if plane.arrival else "takeoff"
         if operation not in grants:
             if plane.arrival:
+                runway_label = edge.runway.rsplit("/", 1)[-1]
                 self._exchange(plane.id, "tower", "established on final",
-                               f"runway {edge.runway}, cleared to land",
-                               f"runway {edge.runway}, cleared to land")
+                               f"runway {runway_label}, cleared to land",
+                               f"runway {runway_label}, cleared to land")
             else:
+                runway_label = edge.runway.rsplit("/", 1)[-1]
                 self._exchange(plane.id, "tower", "ready for departure",
-                               f"runway {edge.runway}, cleared for takeoff",
-                               f"runway {edge.runway}, cleared for takeoff")
+                               f"runway {runway_label}, cleared for takeoff",
+                               f"runway {runway_label}, cleared for takeoff")
             grants.add(operation)
         return True
 
