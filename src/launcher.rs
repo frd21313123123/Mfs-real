@@ -145,6 +145,19 @@ struct Launcher {
     last_tick: Instant,
     sim_time: f64,
     confirm_msfs: bool,
+    download_events: Option<mpsc::Receiver<DownloadEvent>>,
+    download_cancel: std::sync::Arc<std::sync::atomic::AtomicBool>,
+    installer: Option<PathBuf>,
+}
+enum DownloadEvent {
+    Progress(u64),
+    Done(std::result::Result<PathBuf, String>),
+}
+impl Drop for Launcher {
+    fn drop(&mut self) {
+        self.download_cancel
+            .store(true, std::sync::atomic::Ordering::Relaxed);
+    }
 }
 impl Launcher {
     fn new(profile: PathBuf) -> Self {
@@ -171,7 +184,47 @@ impl Launcher {
             last_tick: Instant::now(),
             sim_time: 1e6,
             confirm_msfs: false,
+            download_events: None,
+            download_cancel: std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
+            installer: None,
         }
+    }
+    fn download_installer(&mut self) {
+        let Some(path) = rfd::FileDialog::new()
+            .set_file_name("FlyByWire-Installer.exe")
+            .add_filter("Windows installer", &["exe"])
+            .save_file()
+        else {
+            return;
+        };
+        self.download_cancel
+            .store(false, std::sync::atomic::Ordering::Relaxed);
+        let cancel = self.download_cancel.clone();
+        let (tx, rx) = mpsc::channel();
+        self.download_events = Some(rx);
+        self.installer = None;
+        self.status = "Скачивание официального FlyByWire Installer…".into();
+        std::thread::spawn(move || {
+            let result = crate::traffic_download::download(&path, &cancel, |n| {
+                let _ = tx.send(DownloadEvent::Progress(n));
+            })
+            .map(|()| path)
+            .map_err(|e| format!("Не удалось скачать установщик: {e:#}"));
+            let _ = tx.send(DownloadEvent::Done(result));
+        });
+    }
+    fn find_traffic(&mut self) -> Result<()> {
+        let root = crate::sources::discover(&self.settings.fsltl_path)
+            .or_else(|| crate::sources::discover(""))
+            .context("Модели пока не найдены. Установите FSLTL Traffic Base Models через FlyByWire Installer или выберите их папку вручную.")?;
+        ensure!(
+            !crate::sources::scan(&root)?.is_empty(),
+            "В папке FSLTL нет моделей"
+        );
+        self.settings.fsltl_path = root.to_string_lossy().into_owned();
+        self.save()?;
+        self.status = format!("Модели найдены, путь сохранён: {}", root.display());
+        Ok(())
     }
     fn save(&mut self) -> Result<()> {
         self.profile = PathBuf::from(self.profile_text.trim());
@@ -260,6 +313,28 @@ impl Launcher {
         Ok(())
     }
     fn poll(&mut self) {
+        let updates: Vec<_> = self
+            .download_events
+            .as_ref()
+            .map(|rx| rx.try_iter().collect())
+            .unwrap_or_default();
+        for update in updates {
+            match update {
+                DownloadEvent::Progress(bytes) => {
+                    self.status = format!("Скачивание установщика: {} МБ…", bytes / 1024 / 1024)
+                }
+                DownloadEvent::Done(result) => {
+                    self.download_events = None;
+                    match result {
+                        Ok(path) => {
+                            self.status = "Установщик скачан и проверен. Запустите его и установите FSLTL Traffic Base Models.".into();
+                            self.installer = Some(path);
+                        }
+                        Err(error) => self.status = error,
+                    }
+                }
+            }
+        }
         if let Some(events) = &self.events {
             for line in events.try_iter().take(512) {
                 self.log.push_str(&line);
@@ -462,7 +537,20 @@ impl eframe::App for Launcher {
                 ui.add(egui::Slider::new(&mut self.settings.airborne_limit,0..=35).text("В воздухе"));ui.add(egui::Slider::new(&mut self.settings.ground_limit,0..=30).text("На земле"));
                 ui.checkbox(&mut self.settings.sync_real_flights,"OpenSky: реальные наблюдения");ui.add(egui::DragValue::new(&mut self.settings.fetch_seconds).range(60..=86400).prefix("Интервал, сек: "));
                 ui.add(egui::Slider::new(&mut self.settings.max_radius_km,2. ..=250.).text("Радиус, км"));
-                file_row(ui,"FSLTL",&mut self.settings.fsltl_path,true);file_row(ui,"Граф аэропорта",&mut self.settings.airport_graph,false);
+                file_row(ui,"FSLTL",&mut self.settings.fsltl_path,true);
+                ui.collapsing("Скачать модели трафика", |ui| {
+                    ui.label("FSLTL устанавливается через официальный FlyByWire Installer. Выберите в нём FSLTL → Traffic Base Models и установите пакет.");
+                    ui.hyperlink_to("Официальная страница скачивания", crate::traffic_download::RELEASES_URL);
+                    if ui.add_enabled(cfg!(windows) && self.download_events.is_none(), egui::Button::new("Скачать FlyByWire Installer")).clicked() { self.download_installer(); }
+                    if self.download_events.is_some() && ui.button("Отменить скачивание").clicked() { self.download_cancel.store(true, std::sync::atomic::Ordering::Relaxed); }
+                    if let Some(path) = self.installer.clone()
+                        && ui.add_enabled(cfg!(windows), egui::Button::new("Запустить скачанный установщик")).clicked() {
+                        let result = Command::new("explorer.exe").arg(&path).spawn().map(|_| ()).context("Не удалось открыть установщик");
+                        self.result(result);
+                    }
+                    if ui.button("Найти установленные модели и сохранить путь").clicked() { let r = self.find_traffic(); self.result(r); }
+                    ui.label("Если папка Community нестандартная, выберите папку fsltl-traffic-base вручную выше.");
+                });file_row(ui,"Граф аэропорта",&mut self.settings.airport_graph,false);
                 ui.collapsing("Дополнительные параметры",|ui|{ui.checkbox(&mut self.settings.realistic_taxi,"Реалистичное руление");ui.checkbox(&mut self.settings.runway_control,"Контроль полосы");ui.add(egui::DragValue::new(&mut self.settings.fps_target).range(1..=240).prefix("Целевой FPS: "));ui.label("Эти три параметра сохраняются для совместимости. Движок пока не применяет переключатели; блокировки полос всегда включены.");});
                 let ui=&mut columns[1];ui.heading("Запуск MSFS и ATC");ui.checkbox(&mut self.settings.enable_simconnect_position_writes,"Экспериментальная запись позиций");ui.add(egui::DragValue::new(&mut self.options.duration).range(1..=86400).prefix("Длительность, сек: "));
                 file_row(ui,"Частоты CSV",&mut self.options.atc_csv,false);file_row(ui,"Типы самолётов CSV",&mut self.options.metadata,false);
