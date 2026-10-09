@@ -143,3 +143,20 @@ def test_go_around_heading_remains_stable_outside_final_radius():
     assert clearance.phase=="go-around"
     assert clearance.heading_deg==heading
     director.close()
+
+
+
+def test_departing_ai_climbs_on_assigned_departure_clearance():
+    airport=Position(47,-122,450)
+    destination=forward(airport,90,85000)
+    flight_out=flight("GROUND-TEST1",
+                      Position(airport.lat,airport.lon,450,90,125,False),
+                      destination,False)
+    atc=AIFlightDirector({"departure":124.2,"center":127.8},
+                          RunwayController(),"18",450,airport)
+    atc.tick({flight_out.id:flight_out},1)
+    assert atc.tracks[flight_out.id].clearance.phase=="departure"
+    assert atc.tracks[flight_out.id].clearance.altitude_ft>=8450
+    assert flight_out.position.alt_ft>450
+    assert any(e.station=="departure" and e.kind=="atc" for e in atc.lines)
+    atc.close()
