@@ -48,7 +48,7 @@ jobs:
       - name: Package standalone Linux binaries
         if: runner.os == 'Linux'
         run: ./scripts/package-linux.sh "$PWD/target/x86_64-unknown-linux-gnu/release"
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         if: runner.os == 'Linux'
         with:
           name: RealFlow-Linux-x64-${{ github.run_number }}
@@ -57,7 +57,7 @@ jobs:
             release/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 30
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v6
         with:
           name: native-smoke-${{ runner.os }}
           path: |
