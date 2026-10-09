@@ -109,7 +109,8 @@ class AIFlightDirector:
         clearance = FlightClearance(f.position.heading, f.position.alt_ft,
                                      max(130.0, f.position.speed_kt))
         self.tracks[f.id] = ControlledFlight(f.id, clearance)
-        self._radio(f.id, "center", "radar contact, maintain present altitude",
+        sector = "approach" if getattr(f,"arrival",False) and "approach" in self.frequencies else "center"
+        self._radio(f.id, sector, "radar contact, maintain present altitude",
                     "maintaining present altitude")
 
     def forget(self, id: str, keep_runway: bool = False):
@@ -163,6 +164,14 @@ class AIFlightDirector:
                 phase = "landed"
                 altitude = self.airport_elevation_ft
                 speed = 120
+
+        # Continue the same go-around heading even after leaving the 9 km
+        # threshold; otherwise the controller would turn back prematurely.
+        if not t.owns_runway and self.clock < t.hold_until_s and t.go_around_heading is not None:
+            phase, station = "go-around", "approach"
+            route_heading = t.go_around_heading
+            altitude = t.go_around_altitude_ft
+            speed = 195
 
         # Give the real player priority: only our synthetic aircraft maneuvers.
         player = self.player_position
