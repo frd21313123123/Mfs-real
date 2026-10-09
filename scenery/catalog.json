@@ -1,0 +1,37 @@
+[
+  {
+    "id": "talkeetna-alaska",
+    "icaos": [
+      "PATK",
+      "2AK7",
+      "AK19",
+      "51AK",
+      "AK44",
+      "0AA5"
+    ],
+    "name": "Talkeetna Region Airport & Scenery Pack",
+    "author": "julysfire",
+    "repo": "julysfire/MSFS2020-Talkeetna_Region",
+    "license": "GPL-3.0"
+  },
+  {
+    "id": "saqu-ezpeleta",
+    "icaos": [
+      "SAQU"
+    ],
+    "name": "Aeroclub Río de la Plata, Ezpeleta",
+    "author": "Cronch / Agnalim",
+    "repo": "Cronch/fs2020-saqu-scenary",
+    "license": "MIT"
+  },
+  {
+    "id": "sadq-quilmes",
+    "icaos": [
+      "SADQ"
+    ],
+    "name": "Aeródromo Quilmes IMPA TRQ",
+    "author": "Cronch / Agnalim",
+    "repo": "Cronch/fs2020-sadq-scenary",
+    "license": "MIT"
+  }
+]
