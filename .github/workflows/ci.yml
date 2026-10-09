@@ -20,7 +20,11 @@ jobs:
         run: python -m pytest -q
       - name: Smoke demo
         run: python -m realflow demo --steps 240 --output demo-results.json
+      - name: Integrated ATC/AI smoke demo
+        run: python -m realflow.atc_demo --steps 600 --output atc-demo-results.json
       - uses: actions/upload-artifact@v4
         with:
           name: demo-results-${{ matrix.os }}-${{ matrix.python-version }}
-          path: demo-results.json
+          path: |
+            demo-results.json
+            atc-demo-results.json
