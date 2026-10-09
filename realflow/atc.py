@@ -156,6 +156,9 @@ class PilotATC:
                 return self._say(active, f"repeat clearance: {self.pending.action}, read back {', '.join(self.pending.mandatory)}.", "repeat")
             return self._readback(active, text)
 
+        if self.stage == "landed" and active in ("tower", "ground") and _said(text, "vacated", "clear of runway"):
+            self._release_runway()
+            return self._handoff(active, "ground")
         expected = self._expected()
         if expected and active != expected and not (self.stage == "taxi" and active == "tower"):
             return self._handoff(active, expected)
@@ -173,6 +176,8 @@ class PilotATC:
             return self._clear(active, f"taxi to runway {self.runway}, hold short.",
                                "taxi", (self.runway.lower(), "hold"), "taxi")
         if self.stage == "taxi" and active == "tower" and _said(text, "ready", "departure", *_WORDS["takeoff"]):
+            if self.actual_squawk is not None and self.actual_squawk != self.squawk:
+                return self._say(active, f"check transponder, squawk {self.squawk}.", "correction")
             if not self.runways.reserve(self.runway, self.callsign, "departure"):
                 return self._say(active, f"hold short runway {self.runway}, traffic on runway.", "hold")
             self._runway_owned = True
@@ -236,6 +241,10 @@ class AIAirportController:
 
     def allow_edge(self, plane, edge) -> bool:
         grants = self.grants.setdefault(plane.id, set())
+        role = "tower" if edge.runway else "ground"
+        # No invented controller when the field has no station in the source.
+        if role not in self.frequencies:
+            return False
         if edge.kind == "pushback" and "pushback" not in grants:
             self._exchange(plane.id, "ground", "request pushback", "pushback approved",
                            "pushback approved")
@@ -255,11 +264,17 @@ class AIAirportController:
                 self.waiting.add(plane.id)
             return False
         self.waiting.discard(plane.id)
-        if "takeoff" not in grants:
-            self._exchange(plane.id, "tower", "ready for departure",
-                           f"runway {edge.runway}, cleared for takeoff",
-                           f"runway {edge.runway}, cleared for takeoff")
-            grants.add("takeoff")
+        operation = "landing" if plane.arrival else "takeoff"
+        if operation not in grants:
+            if plane.arrival:
+                self._exchange(plane.id, "tower", "established on final",
+                               f"runway {edge.runway}, cleared to land",
+                               f"runway {edge.runway}, cleared to land")
+            else:
+                self._exchange(plane.id, "tower", "ready for departure",
+                               f"runway {edge.runway}, cleared for takeoff",
+                               f"runway {edge.runway}, cleared for takeoff")
+            grants.add(operation)
         return True
 
     def forget(self, aircraft_id: str):
