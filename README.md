@@ -9,8 +9,8 @@
 
 ## Запуск готовой Windows-сборки
 
-Скачайте артефакт `RealFlow-Windows-x64-*` из GitHub Actions после успешного
-выполнения workflow **Standalone Windows Rust executables**. Распакуйте
+Скачайте `RealFlow-Windows-x64.zip` со страницы
+[GitHub Releases](https://github.com/frd21313123123/Mfs-real/releases/latest). Распакуйте
 `RealFlow-Windows-x64.zip` и откройте `realflow-launcher.exe` или
 `start-launcher.bat`. Держите `realflow.exe` рядом с лаунчером. Rust toolchain,
 Python, pip и отдельный Visual C++ runtime для этих программ не требуются.
@@ -73,6 +73,12 @@ cargo build --release --locked --bins
 GitHub Actions автоматически публикует артефакты `RealFlow-Linux-x64-*`
 для Linux и `RealFlow-Windows-x64-*` для Windows при push и pull request.
 Windows-сборка также запускается вручную через workflow_dispatch.
+
+При отправке тега `v<версия из Cargo.toml>` workflow **Publish compiled releases**
+собирает и проверяет обе платформы, затем публикует Windows ZIP, Linux tar.gz
+и общий `SHA256SUMS.txt` в GitHub Releases. Например, для версии 0.3.0:
+`git tag v0.3.0` и `git push origin v0.3.0`. Релиз появляется только после
+успешной сборки обеих платформ.
 
 Linux-бинарники используют системные libc/OpenSSL/графические библиотеки;
 пакет Linux не заявляется универсальной статической сборкой.
