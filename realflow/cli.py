@@ -162,9 +162,16 @@ def run(args):
             raise ValueError('Set both --pilot-destination and --pilot-runway')
         from .atc import PilotATC
         from .pilot_console import PilotRadioConsole
+        runway_tags={edge.runway for edge in airport.airport.edges.values()
+                     if edge.runway}
+        matches=[tag for tag in runway_tags
+                 if tag.upper()==args.pilot_runway.upper() or
+                    tag.rsplit("/",1)[-1].upper()==args.pilot_runway.upper()]
+        if len(matches)!=1:
+            raise ValueError('Player runway must uniquely match a runway in the validated airport graph')
         pilot=PilotATC(args.pilot_callsign,airport.airport.icao,
                        args.pilot_destination,ai_atc.frequencies,args.pilot_runway,
-                       runways=airport.runways)
+                       runways=airport.runways,runway_key=matches[0])
         field_alt=min(n.position.alt_ft for n in airport.airport.nodes.values())
         pilot_console=PilotRadioConsole(pilot,field_alt,
                       voice_model=args.pilot_voice_model,
