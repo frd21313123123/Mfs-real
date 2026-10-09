@@ -7,12 +7,15 @@ from .fsltl import ModelMatcher
 from .synthetic import SyntheticTraffic
 
 class TrafficManager:
-    def __init__(self,settings:Settings,matcher:ModelMatcher,bridge,ground:GroundEngine|None=None):
+    def __init__(self,settings:Settings,matcher:ModelMatcher,bridge,ground:GroundEngine|None=None,ai_atc=None):
         self.settings=settings.validate()
         self.bridge=bridge
         self.fleet=AirFleet(matcher,limit=settings.airborne_limit)
         self.synthetic=SyntheticTraffic(matcher)
         self.ground=ground
+        self.ai_atc=ai_atc
+        if self.ground is not None and self.ai_atc is not None:
+            self.ground.clearance_provider=self.ai_atc.allow_edge
         self._spawned=set()
         self._clock=0.0
 
@@ -63,6 +66,7 @@ class TrafficManager:
             for key,ac in list(self.ground.aircraft.items()):
                 if ac.phase.value in ('AIRBORNE','COMPLETE'):
                     self.ground.remove(key)
+                    if self.ai_atc is not None: self.ai_atc.forget(key)
         return {'live':len(self.fleet.aircraft),'synthetic':len(self.synthetic.aircraft),
                 'ground':sum(1 for a in self.ground.aircraft.values()
                              if a.phase.value not in ('AIRBORNE','COMPLETE')) if self.ground else 0,

@@ -103,8 +103,12 @@ def run(args):
     if not models:
         raise RuntimeError('FSLTL models not found. Run doctor or set --fsltl path. No fallback sample models are injected.')
     if args.bridge=='simconnect':
-        from .simconnect import SimConnectBridge
-        bridge=SimConnectBridge(enable_position_writes=args.allow_motion)
+        if args.atc_csv:
+            from .cockpit_radio import CockpitSimConnectBridge
+            bridge=CockpitSimConnectBridge(enable_position_writes=args.allow_motion)
+        else:
+            from .simconnect import SimConnectBridge
+            bridge=SimConnectBridge(enable_position_writes=args.allow_motion)
     else:
         bridge=MockBridge()
     bridge.connect()
@@ -115,9 +119,28 @@ def run(args):
         if args.bridge=='simconnect' and not args.allow_motion:
             raise RuntimeError('Ground movement requires --allow-motion; airport JSON must be VERIFIED against in-sim airport')
         airport=GroundEngine(AirportGraph.from_json(args.airport),max_ground=settings.ground_limit)
-    manager=TrafficManager(settings,ModelMatcher(models),bridge,airport)
+    ai_atc=None
+    if args.atc_csv:
+        if not airport:
+            raise ValueError('--atc-csv requires --airport with validated taxi graph')
+        from .frequencies import FrequencyDirectory
+        from .atc import AIAirportController
+        directory=FrequencyDirectory.load(args.atc_csv)
+        stations=directory.primary(airport.airport.icao)
+        if not stations.get('ground') or not stations.get('tower'):
+            raise ValueError('No published GROUND/TOWER frequencies for this airport; AI ATC cannot start')
+        ai_atc=AIAirportController(stations,airport.runways)
+        print('AI ATC enabled using community frequency records; verify against AIP.')
+    manager=TrafficManager(settings,ModelMatcher(models),bridge,airport,ai_atc=ai_atc)
     live=OpenSkyClient(minimum_interval=settings.fetch_seconds) if settings.sync_real_flights and settings.mode!='simulation' else None
     metadata=AircraftMetadata.from_csv(args.metadata) if args.metadata else None
+    radio_speaker=None
+    last_ai_message=0
+    if args.atc_voice:
+        if ai_atc is None:
+            raise ValueError('--atc-voice requires --atc-csv with a verified airport graph')
+        from .voice import RadioSpeaker
+        radio_speaker=RadioSpeaker()
     last=time.monotonic();started=last;next_fetch=0.0
     next_ground=0.0
     ground_counter=0
@@ -160,6 +183,15 @@ def run(args):
                             except ValueError: pass
                 next_ground=now+180
             stats=manager.tick(dt,time.time(),origin)
+            if ai_atc:
+                lines=ai_atc.lines[last_ai_message:]
+                last_ai_message=len(ai_atc.lines)
+                radio=getattr(bridge,'player_radio',None)
+                frequency=(radio.com2_mhz if radio.transmitting==2 else radio.com1_mhz) if radio else args.atc_monitor_frequency
+                for line in lines:
+                    if line.mhz is not None and frequency is not None and abs(line.mhz-frequency)<=0.001:
+                        print(f'ATC [{line.mhz:.3f}] {line.speaker}: {line.message}')
+                        if radio_speaker: radio_speaker.speak(line.message)
             if int(now-started)%30==0 and now-last<0.3:
                 pass  # No console log spam while running.
             time.sleep(0.25)
@@ -167,6 +199,7 @@ def run(args):
         print('Shutting down...')
     finally:
         manager.close()
+        if radio_speaker: radio_speaker.close()
     return 0
 
 def convert_airport(args):
@@ -199,6 +232,9 @@ def main(argv=None):
     p.add_argument('--alt-ft',type=float,default=10000)
     p.add_argument('--airport',help='Verified airport graph JSON file, no automatic extraction yet')
     p.add_argument('--metadata',help='Optional CSV with icao24,icao_type model metadata')
+    p.add_argument('--atc-csv',help='Enable AI Ground/Tower ATC using local OurAirports frequencies CSV; requires --airport')
+    p.add_argument('--atc-voice',action='store_true',help='Speak AI/controller chatter on the cockpit tuned transmitting COM radio')
+    p.add_argument('--atc-monitor-frequency',type=float,default=None,help='Monitor a specific MHz frequency without a native cockpit (mock testing)')
     p.add_argument('--duration',type=float,default=0,help='Seconds to run, 0 = indefinite')
     p.add_argument('--follow-user',action='store_true',default=True)
     p.set_defaults(handler=run)
