@@ -143,8 +143,8 @@ class AIFlightDirector:
                         t.owns_runway = True
                         t.go_around_heading = None
                         self._radio(f.id, "tower",
-                                    f"runway {self.runway_id}, cleared to land",
-                                    f"runway {self.runway_id}, cleared to land")
+                                    f"runway {self.runway_id.rsplit(chr(47), 1)[-1]}, cleared to land",
+                                    f"runway {self.runway_id.rsplit(chr(47), 1)[-1]}, cleared to land")
                     else:
                         t.go_arounds += 1
                         t.hold_until_s = self.clock + 90
