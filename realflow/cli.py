@@ -8,7 +8,7 @@ import time
 from dataclasses import asdict
 from pathlib import Path
 from .__init__ import __version__
-from .geo import Position
+from .geo import Position, bearing_deg
 from .airport import AirportGraph
 from .airport_xml import convert
 from .bridge import BridgeError,MockBridge
@@ -131,11 +131,32 @@ def run(args):
             raise ValueError('No published GROUND/TOWER frequencies for this airport; AI ATC cannot start')
         ai_atc=AIAirportController(stations,airport.runways)
         print('AI ATC enabled using community frequency records; verify against AIP.')
-    manager=TrafficManager(settings,ModelMatcher(models),bridge,airport,ai_atc=ai_atc)
+    flight_director=None
+    if args.atc_airborne:
+        if not ai_atc or not airport:
+            raise ValueError('--atc-airborne requires --atc-csv and a validated --airport')
+        if not ai_atc.frequencies.get('approach') or not ai_atc.frequencies.get('tower'):
+            raise ValueError('ATC airborne arrival requires published approach and tower frequencies')
+        runway_legs=[e for e in airport.airport.edges.values() if e.runway and
+                     airport.airport.nodes[e.src].kind=='runway' and
+                     airport.airport.nodes[e.dst].kind=='runway']
+        if not runway_legs:
+            raise ValueError('Verified airport graph must have a tagged runway edge')
+        edge=runway_legs[0]
+        from .flight_director import AIFlightDirector
+        threshold=airport.airport.nodes[edge.dst].position
+        flight_director=AIFlightDirector(ai_atc.frequencies,airport.runways,
+                       edge.runway,threshold.alt_ft,threshold)
+        flight_director.approach_heading=bearing_deg(
+            airport.airport.nodes[edge.src].position,threshold)
+        print('Airborne ATC enabled: synthetic AI only; experimental motion and approaches.')
+    manager=TrafficManager(settings,ModelMatcher(models),bridge,airport,
+                           ai_atc=ai_atc,flight_director=flight_director)
     live=OpenSkyClient(minimum_interval=settings.fetch_seconds) if settings.sync_real_flights and settings.mode!='simulation' else None
     metadata=AircraftMetadata.from_csv(args.metadata) if args.metadata else None
     radio_speaker=None
     last_ai_message=0
+    last_flight_message=0
     if args.atc_voice:
         if ai_atc is None:
             raise ValueError('--atc-voice requires --atc-csv with a verified airport graph')
@@ -183,6 +204,15 @@ def run(args):
                             except ValueError: pass
                 next_ground=now+180
             stats=manager.tick(dt,time.time(),origin)
+            if flight_director:
+                lines=flight_director.lines[last_flight_message:]
+                last_flight_message=len(flight_director.lines)
+                radio=getattr(bridge,'player_radio',None)
+                frequency=(radio.com2_mhz if radio.transmitting==2 else radio.com1_mhz) if radio else args.atc_monitor_frequency
+                for line in lines:
+                    if line.mhz is not None and frequency is not None and abs(line.mhz-frequency)<=0.001:
+                        print(f'Air ATC [{line.mhz:.3f}] {line.speaker}: {line.message}')
+                        if radio_speaker: radio_speaker.speak(line.message)
             if ai_atc:
                 lines=ai_atc.lines[last_ai_message:]
                 last_ai_message=len(ai_atc.lines)
@@ -234,6 +264,7 @@ def main(argv=None):
     p.add_argument('--metadata',help='Optional CSV with icao24,icao_type model metadata')
     p.add_argument('--atc-csv',help='Enable AI Ground/Tower ATC using local OurAirports frequencies CSV; requires --airport')
     p.add_argument('--atc-voice',action='store_true',help='Speak AI/controller chatter on the cockpit tuned transmitting COM radio')
+    p.add_argument('--atc-airborne',action='store_true',help='Experimental control of synthetic AI airborne flights, runway sequencing and radio')
     p.add_argument('--atc-monitor-frequency',type=float,default=None,help='Monitor a specific MHz frequency without a native cockpit (mock testing)')
     p.add_argument('--duration',type=float,default=0,help='Seconds to run, 0 = indefinite')
     p.add_argument('--follow-user',action='store_true',default=True)
