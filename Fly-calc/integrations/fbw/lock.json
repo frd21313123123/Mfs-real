@@ -1,0 +1,26 @@
+{
+  "msfs2020": {
+    "branch": "fs2020-master",
+    "sha": "672384b9602a84d6832b8852cd6ec0abdd006f85",
+    "patch": "integrations/fbw/patches/msfs2020.patch",
+    "sha256": "d42d051bf5b5566e0310cd569441caa3306daafdfb1a33eda46184a7ca83e0b4",
+    "sourceHashes": {
+      "fbw-common/src/systems/instruments/src/EFB/Efb.tsx": "5733bd323e88d178a2030a6f4b4d8e2460065af23ce7ad7b818a095008016141",
+      "fbw-common/src/systems/instruments/src/EFB/ToolBar/ToolBar.tsx": "3a510f171804d1967cb80ae2a6b5341fb238ce5be93d5e8768b932587a361d5c"
+    },
+    "fullAircraftBuild": "not_run",
+    "inSimulator": "not_run"
+  },
+  "msfs2024": {
+    "branch": "master",
+    "sha": "255546cb02db1c7b40d2505ac621a9d36748d258",
+    "patch": "integrations/fbw/patches/msfs2024.patch",
+    "sha256": "d42d051bf5b5566e0310cd569441caa3306daafdfb1a33eda46184a7ca83e0b4",
+    "sourceHashes": {
+      "fbw-common/src/systems/instruments/src/EFB/Efb.tsx": "5733bd323e88d178a2030a6f4b4d8e2460065af23ce7ad7b818a095008016141",
+      "fbw-common/src/systems/instruments/src/EFB/ToolBar/ToolBar.tsx": "3a510f171804d1967cb80ae2a6b5341fb238ce5be93d5e8768b932587a361d5c"
+    },
+    "fullAircraftBuild": "not_run",
+    "inSimulator": "not_run"
+  }
+}

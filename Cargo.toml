@@ -1,6 +1,6 @@
 [package]
 name = "realflow-traffic"
-version = "0.3.0"
+version = "0.3.1"
 edition = "2024"
 rust-version = "1.90"
 license = "MIT"
@@ -20,9 +20,12 @@ required-features = ["gui"]
 
 [features]
 default = ["gui"]
-gui = ["dep:eframe", "dep:rfd"]
+gui = ["dep:eframe", "dep:rfd", "dep:sha2", "dep:base64", "dep:tempfile"]
 
 [dependencies]
+sha2 = { version = "0.10", optional = true }
+base64 = { version = "0.22", optional = true }
+tempfile = { version = "3", optional = true }
 anyhow = "1"
 clap = { version = "4", features = ["derive"] }
 serde = { version = "1", features = ["derive"] }

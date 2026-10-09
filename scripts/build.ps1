@@ -3,13 +3,14 @@ $ErrorActionPreference = 'Stop'
 Push-Location (Join-Path $PSScriptRoot '..')
 try {
     function Invoke-Cargo {
-        & cargo @args
+        param([Parameter(Mandatory = $true)][string[]]$CargoArguments)
+        & cargo @CargoArguments
         if ($LASTEXITCODE -ne 0) { throw "cargo failed with exit code $LASTEXITCODE" }
     }
-    Invoke-Cargo fmt --all -- --check
-    Invoke-Cargo clippy --locked --all-targets --target x86_64-pc-windows-msvc -- -D warnings
-    Invoke-Cargo test --locked --all-targets --target x86_64-pc-windows-msvc
-    Invoke-Cargo build --release --locked --bins --target x86_64-pc-windows-msvc
+    Invoke-Cargo -CargoArguments @('fmt', '--all', '--', '--check')
+    Invoke-Cargo -CargoArguments @('clippy', '--locked', '--all-targets', '--target', 'x86_64-pc-windows-msvc', '--', '-D', 'warnings')
+    Invoke-Cargo -CargoArguments @('test', '--locked', '--all-targets', '--target', 'x86_64-pc-windows-msvc')
+    Invoke-Cargo -CargoArguments @('build', '--release', '--locked', '--bins', '--target', 'x86_64-pc-windows-msvc')
     $buildStage = Join-Path (Get-Location) ('release/.realflow-stage-' + [guid]::NewGuid().ToString('N'))
     $package = Join-Path $buildStage 'RealFlow-Windows-x64'
     New-Item -ItemType Directory -Force -Path $package | Out-Null
@@ -32,7 +33,7 @@ try {
     $hash = (Get-FileHash release/RealFlow-Windows-x64.zip -Algorithm SHA256).Hash.ToLowerInvariant()
     "$hash  RealFlow-Windows-x64.zip" | Set-Content release/SHA256SUMS.txt -Encoding ascii
     Write-Host 'Ready: release/RealFlow-Windows-x64.zip (no Python required)'
- } finally {
+} finally {
     if ($buildStage -and (Test-Path $buildStage)) { Remove-Item -LiteralPath $buildStage -Recurse -Force }
     Pop-Location
 }
