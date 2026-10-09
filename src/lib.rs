@@ -11,6 +11,10 @@ pub mod launcher;
 pub mod sources;
 #[cfg(feature = "gui")]
 pub mod traffic_download;
+#[cfg(feature = "gui")]
+pub mod scenery;
+#[cfg(feature = "gui")]
+pub mod scenery_ui;
 pub mod voice;
 pub const VERSION: &str = env!("CARGO_PKG_VERSION");
 pub const DEMO_GRAPH: &str = include_str!("../examples/demo_airport.json");
