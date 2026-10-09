@@ -1,5 +1,7 @@
 # RealFlow Traffic 0.1.0
 
+[![CI](https://github.com/frd21313123123/Mfs-real/actions/workflows/ci.yml/badge.svg)](https://github.com/frd21313123123/Mfs-real/actions/workflows/ci.yml) [![Windows prototype](https://github.com/frd21313123123/Mfs-real/actions/workflows/windows-exe.yml/badge.svg)](https://github.com/frd21313123123/Mfs-real/actions/workflows/windows-exe.yml)
+
 **MSFS 2020 traffic research prototype: Hybrid ADS-B + synthetic traffic + local FSLTL aircraft models.**
 
 > **CURRENT STATUS: ENGINE PROTOTYPE, NOT A STABLE MSFS PLUGIN.**
@@ -147,7 +149,7 @@ Tests cover model parsing, model matching, aircraft metadata enrichment, OpenSky
 
 ## Windows executable build
 
-When this source project is pushed to a GitHub repository, run the included `Windows EXE build (prototype)` workflow via the GitHub Actions tab. The workflow uses PyInstaller to compile `RealFlowTraffic.exe` from `realflow_gui.py`, then uploads it as an Actions artifact. **It has not been executed in this environment**. SimConnect binaries and FSLTL models are not included in the EXE.
+The [Windows prototype EXE workflow](https://github.com/frd21313123123/Mfs-real/actions/workflows/windows-exe.yml) runs automatically when `main` changes and can also be started manually from the **Actions** tab. After a successful run, download the `RealFlowTraffic-Windows-prototype-*` artifact containing `RealFlowTraffic.exe` and demo results. Its first GitHub-hosted Windows build succeeded on 2026-10-09. This EXE is an **experimental offline UI prototype**, not a verified live-MSFS release. SimConnect binaries and FSLTL models are not bundled.
 
 ## Architecture
 
