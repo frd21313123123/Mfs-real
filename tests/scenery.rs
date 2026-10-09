@@ -26,7 +26,7 @@ fn cfg_path_picks_active_msfs_install_and_handles_spaces() {
     let data = "SomeSetting 1\nInstalledPackagesPath \"D:\\MSFS 2020\\Packages\"\n";
     assert_eq!(
         community_from_usercfg(data).unwrap().to_string_lossy(),
-        "D:\\MSFS 2020\\Packages\\Community".replace('\\', std::path::MAIN_SEPARATOR_STR)
+        std::path::PathBuf::from(r"D:\MSFS 2020\Packages").join("Community")
     );
     assert!(community_from_usercfg("SomeSetting 1").is_none());
     assert!(community_from_usercfg("InstalledPackagesPath \"\"").is_none());
