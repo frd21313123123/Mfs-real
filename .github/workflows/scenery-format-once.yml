@@ -1,0 +1,25 @@
+name: One-time Rust formatting for scenery feature
+on:
+  push:
+    branches: ['feature/scenery-catalog']
+permissions:
+  contents: write
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@1.90.0
+        with:
+          components: rustfmt
+      - name: Apply formatter and remove bootstrap workflow
+        run: |
+          cargo fmt --all
+          rm -f .github/workflows/scenery-format-once.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          if ! git diff --cached --quiet; then
+            git commit -m "style: apply rustfmt to native launcher and scenery code"
+            git push origin HEAD:feature/scenery-catalog
+          fi
