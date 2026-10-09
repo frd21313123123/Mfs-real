@@ -284,7 +284,7 @@ class AIAirportController:
         if not self.runways.is_available(edge.runway, plane.id):
             if plane.id not in self.waiting:
                 self.lines.append(RadioLine("tower", "TOWER",
-                    f"{plane.id}, hold short runway {edge.runway}, landing or departing traffic.",
+                    f"{plane.id}, hold short runway {edge.runway.rsplit(chr(47), 1)[-1]}, landing or departing traffic.",
                     self.frequencies.get("tower"), "hold"))
                 self.waiting.add(plane.id)
             return False
