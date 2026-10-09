@@ -129,6 +129,13 @@ class AIFlightDirector:
         altitude = max(current.alt_ft, 1500.0)
         station = "center"
 
+        if self.airport_position is not None and self.runway_id and not getattr(f, 'arrival', False):
+            dist = distance_m(current, self.airport_position)
+            if dist < 40000:
+                phase, station = 'departure', 'departure' if 'departure' in self.frequencies else 'center'
+                altitude = max(current.alt_ft, self.airport_elevation_ft + 8000)
+                speed = 210 if dist < 10000 else 270 if dist < 30000 else 310
+
         if self.airport_position is not None and self.runway_id and getattr(f, 'arrival', False):
             dist = distance_m(current, self.airport_position)
             route_heading = bearing_deg(current, self.airport_position)
