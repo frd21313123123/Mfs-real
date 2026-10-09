@@ -1,0 +1,20 @@
+name: Normalize integration lockfile
+on:
+  push:
+    branches: [prepare/all-open-prs-20261009]
+permissions:
+  contents: read
+jobs:
+  lock:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: dtolnay/rust-toolchain@1.90.0
+      - uses: Swatinem/rust-cache@v2
+      - name: Resolve combined lockfile with Cargo
+        shell: bash
+        run: |
+          cargo metadata --format-version 1 > /dev/null
+          echo REALFLOW_LOCK_BEGIN
+          cat Cargo.lock
+          echo REALFLOW_LOCK_END
