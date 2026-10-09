@@ -3,7 +3,11 @@ use crate::scenery::{self, Scenery};
 use eframe::egui;
 use std::{
     path::PathBuf,
-    sync::{Arc, atomic::{AtomicBool, Ordering}, mpsc},
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+        mpsc,
+    },
 };
 
 enum Event {
@@ -30,8 +34,10 @@ impl Default for SceneryPanel {
         Self {
             query: String::new(),
             destination: scenery::detect_community()
-                .map(|p| p.to_string_lossy().into_owned()).unwrap_or_default(),
-            items, error,
+                .map(|p| p.to_string_lossy().into_owned())
+                .unwrap_or_default(),
+            items,
+            error,
             status: "Выберите ICAO и нажмите «Скачать и установить»".into(),
             events: None,
             cancel: Arc::new(AtomicBool::new(false)),
@@ -49,16 +55,23 @@ impl SceneryPanel {
     fn target(&self) -> Result<PathBuf, String> {
         let target = PathBuf::from(self.destination.trim());
         if !target.is_dir() {
-            return Err("Папка назначения не существует. Выберите Community или свою папку.".into());
+            return Err(
+                "Папка назначения не существует. Выберите Community или свою папку.".into(),
+            );
         }
         Ok(target)
     }
 
     fn start_download(&mut self, item: Scenery) {
-        if self.events.is_some() { return; }
+        if self.events.is_some() {
+            return;
+        }
         let target = match self.target() {
             Ok(target) => target,
-            Err(error) => { self.status = error; return; }
+            Err(error) => {
+                self.status = error;
+                return;
+            }
         };
         self.cancel.store(false, Ordering::Relaxed);
         let cancel = Arc::clone(&self.cancel);
@@ -68,37 +81,51 @@ impl SceneryPanel {
         std::thread::spawn(move || {
             let result = scenery::download_and_install(&item, &target, &cancel, |count| {
                 let _ = tx.send(Event::Bytes(count));
-            }).map_err(|error| format!("{error:#}"));
+            })
+            .map_err(|error| format!("{error:#}"));
             let _ = tx.send(Event::Done(result));
         });
     }
 
     fn import_zip(&mut self, zip: PathBuf) {
-        if self.events.is_some() { return; }
+        if self.events.is_some() {
+            return;
+        }
         let target = match self.target() {
             Ok(target) => target,
-            Err(error) => { self.status = error; return; }
+            Err(error) => {
+                self.status = error;
+                return;
+            }
         };
         let (tx, rx) = mpsc::channel();
         self.events = Some(rx);
         self.status = format!("Установка из ZIP: {}", zip.display());
         std::thread::spawn(move || {
-            let result = scenery::install_local_zip(&zip, &target)
-                .map_err(|error| format!("{error:#}"));
+            let result =
+                scenery::install_local_zip(&zip, &target).map_err(|error| format!("{error:#}"));
             let _ = tx.send(Event::Done(result));
         });
     }
 
     fn poll(&mut self) {
-        let messages: Vec<_> = self.events.as_ref()
-            .map(|r| r.try_iter().collect()).unwrap_or_default();
+        let messages: Vec<_> = self
+            .events
+            .as_ref()
+            .map(|r| r.try_iter().collect())
+            .unwrap_or_default();
         for event in messages {
             match event {
-                Event::Bytes(n) => self.status = format!("Загружено: {:.1} МБ", n as f64 / 1_048_576.),
+                Event::Bytes(n) => {
+                    self.status = format!("Загружено: {:.1} МБ", n as f64 / 1_048_576.)
+                }
                 Event::Done(result) => {
                     self.events = None;
                     self.status = match result {
-                        Ok(packages) => format!("Установлено: {}. Перезапустите MSFS 2020.", packages.join(", ")),
+                        Ok(packages) => format!(
+                            "Установлено: {}. Перезапустите MSFS 2020.",
+                            packages.join(", ")
+                        ),
                         Err(error) => format!("Ошибка: {error}"),
                     };
                 }
