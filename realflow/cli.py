@@ -154,12 +154,28 @@ def run(args):
                            ai_atc=ai_atc,flight_director=flight_director)
     live=OpenSkyClient(minimum_interval=settings.fetch_seconds) if settings.sync_real_flights and settings.mode!='simulation' else None
     metadata=AircraftMetadata.from_csv(args.metadata) if args.metadata else None
+    pilot_console=None
+    if args.pilot_callsign:
+        if ai_atc is None or airport is None:
+            raise ValueError('--pilot-callsign requires --atc-csv and --airport')
+        if not args.pilot_destination or not args.pilot_runway:
+            raise ValueError('Set both --pilot-destination and --pilot-runway')
+        from .atc import PilotATC
+        from .pilot_console import PilotRadioConsole
+        pilot=PilotATC(args.pilot_callsign,airport.airport.icao,
+                       args.pilot_destination,ai_atc.frequencies,args.pilot_runway,
+                       runways=airport.runways)
+        field_alt=min(n.position.alt_ft for n in airport.airport.nodes.values())
+        pilot_console=PilotRadioConsole(pilot,field_alt,
+                      voice_model=args.pilot_voice_model,
+                      offline_com1=args.atc_monitor_frequency if args.bridge=='mock' else None)
+        pilot_console.start()
     radio_speaker=None
     last_ai_message=0
     last_flight_message=0
-    if args.atc_voice:
+    if args.atc_voice or args.pilot_voice_model:
         if ai_atc is None:
-            raise ValueError('--atc-voice requires --atc-csv with a verified airport graph')
+            raise ValueError('Radio TTS requires --atc-csv with a verified airport graph')
         from .voice import RadioSpeaker
         radio_speaker=RadioSpeaker()
     last=time.monotonic();started=last;next_fetch=0.0
@@ -174,6 +190,15 @@ def run(args):
             dt=max(0.05,min(1.0,now-last));last=now
             if bridge.player_position is not None and args.follow_user:
                 origin=bridge.player_position
+            if flight_director:
+                flight_director.player_position=getattr(bridge,'player_position',None)
+            if pilot_console:
+                radio=getattr(bridge,'player_radio',None)
+                responses=pilot_console.poll(radio,getattr(bridge,'player_position',None),now)
+                for event in responses:
+                    print(f'Player ATC [{event.mhz}] {event.speaker}: {event.message}')
+                    if radio_speaker and event.mhz is not None and pilot_console.pilot.tuned is not None and abs(event.mhz-pilot_console.pilot.tuned)<=0.001:
+                        radio_speaker.speak(event.message)
             if live and now>=next_fetch:
                 try:
                     # Independent lower-frequency OpenSky polling, never per simulation tick.
@@ -228,6 +253,7 @@ def run(args):
     except KeyboardInterrupt:
         print('Shutting down...')
     finally:
+        if pilot_console: pilot_console.close()
         manager.close()
         if radio_speaker: radio_speaker.close()
     return 0
@@ -265,6 +291,10 @@ def main(argv=None):
     p.add_argument('--atc-csv',help='Enable AI Ground/Tower ATC using local OurAirports frequencies CSV; requires --airport')
     p.add_argument('--atc-voice',action='store_true',help='Speak AI/controller chatter on the cockpit tuned transmitting COM radio')
     p.add_argument('--atc-airborne',action='store_true',help='Experimental control of synthetic AI airborne flights, runway sequencing and radio')
+    p.add_argument('--pilot-callsign',default='',help='Start a human pilot ATC session in the same AI traffic loop')
+    p.add_argument('--pilot-destination',default='',help='Destination ICAO for player ATC')
+    p.add_argument('--pilot-runway',default='',help='Verified departure runway designator')
+    p.add_argument('--pilot-voice-model',default='',help='Use microphone PTT and spoken replies via offline Vosk model')
     p.add_argument('--atc-monitor-frequency',type=float,default=None,help='Monitor a specific MHz frequency without a native cockpit (mock testing)')
     p.add_argument('--duration',type=float,default=0,help='Seconds to run, 0 = indefinite')
     p.add_argument('--follow-user',action='store_true',default=True)
