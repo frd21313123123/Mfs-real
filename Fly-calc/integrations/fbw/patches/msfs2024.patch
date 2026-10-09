@@ -1,0 +1,247 @@
+--- a/fbw-common/src/systems/instruments/src/EFB/Efb.tsx
++++ b/fbw-common/src/systems/instruments/src/EFB/Efb.tsx
+@@ -1,5 +1,5 @@
+ // @ts-strict-ignore
+-// Copyright (c) 2023-2025 FlyByWire Simulations
++// Copyright (c) 2023-2026 FlyByWire Simulations
+ // SPDX-License-Identifier: GPL-3.0
+ 
+ import React, { useContext, useEffect, useState } from 'react';
+@@ -44,6 +44,7 @@
+ import { StatusBar } from './StatusBar/StatusBar';
+ import { ToolBar } from './ToolBar/ToolBar';
+ import { Dashboard } from './Dashboard/Dashboard';
++import { FlyCalc } from './FlyCalc/FlyCalc';
+ import { Dispatch } from './Dispatch/Dispatch';
+ import { Ground } from './Ground/Ground';
+ import { Performance } from './Performance/Performance';
+@@ -448,6 +449,7 @@
+                     </Route>
+                     <Route path="/dashboard" component={Dashboard} />
+                     <Route path="/dispatch" component={Dispatch} />
++                  <Route path="/fly-calc" component={FlyCalc} />
+                     <Route path="/ground" component={Ground} />
+                     <Route path="/performance" component={Performance} />
+                     <Route path="/navigation" component={Navigation} />
+--- a/fbw-common/src/systems/instruments/src/EFB/ToolBar/ToolBar.tsx
++++ b/fbw-common/src/systems/instruments/src/EFB/ToolBar/ToolBar.tsx
+@@ -1,5 +1,5 @@
+ // @ts-strict-ignore
+-// Copyright (c) 2023-2024 FlyByWire Simulations
++// Copyright (c) 2023-2026 FlyByWire Simulations
+ // SPDX-License-Identifier: GPL-3.0
+ 
+ import React, { FC } from 'react';
+@@ -47,6 +47,9 @@
+       <ToolBarButton to="/dispatch" tooltipText={t('Dispatch.Title')}>
+         <Clipboard size={35} />
+       </ToolBarButton>
++      <ToolBarButton to="/fly-calc" tooltipText="Fly-calc">
++        <span className="text-2xl font-bold">FC</span>
++      </ToolBarButton>
+       <ToolBarButton to="/ground" tooltipText={t('Ground.Title')}>
+         <Truck size={35} />
+       </ToolBarButton>
+--- /dev/null
++++ b/fbw-common/src/systems/instruments/src/EFB/FlyCalc/FlyCalc.tsx
+@@ -0,0 +1,123 @@
++// Copyright (c) 2026 Fly-calc contributors
++// SPDX-License-Identifier: GPL-3.0-or-later
++import React, { useEffect, useRef, useState } from 'react';
++import { Aircraft, DocumentInfo, Probe, Status, request } from './client';
++import './flycalc.css';
++
++const SERVICE = 'http://127.0.0.1:8147';
++
++export function FlyCalc() {
++  const base = SERVICE;
++  const fenix = typeof window !== 'undefined' && (window.location.pathname === '/fenix' || window.location.search.indexOf('display=fenix') >= 0);
++  const embedded = typeof window !== 'undefined' && (window.location.protocol === 'coui:' || window.location.search.indexOf('display=flypad') >= 0);
++  const [departure, setDeparture] = useState('UUEE');
++  const [arrival, setArrival] = useState('ULLI');
++  const [aircraft, setAircraft] = useState(fenix ? 'fenix-a320' : 'fbw-a32nx');
++  const [fleet, setFleet] = useState<Aircraft[]>([]);
++  const [status, setStatus] = useState<Status | null>(null);
++  const [probe, setProbe] = useState<Probe | null>(null);
++  const [busy, setBusy] = useState(false);
++  const [error, setError] = useState('');
++  const [tab, setTab] = useState('flight');
++  const [documents, setDocuments] = useState<DocumentInfo[]>([]);
++  const [document, setDocument] = useState<DocumentInfo | null>(null);
++  const [page, setPage] = useState(0);
++  const [chartIcao, setChartIcao] = useState('UUEE');
++  const alive = useRef(true);
++  const [connectionTick, setConnectionTick] = useState(0);
++
++  useEffect(() => {
++    alive.current = true;
++    let active = true;
++    Promise.all([request<Status>(base, '/api/v1/status'), request<Aircraft[]>(base, '/api/v1/aircraft')])
++      .then(([s, f]) => { if (active) { setStatus(s); setFleet(f); setError(''); } })
++      .catch((e: Error) => { if (active) { setStatus(null); setError(e.message); } });
++    return () => { active = false; alive.current = false; };
++  }, [base, connectionTick]);
++
++  const loadDocuments = () => request<DocumentInfo[]>(base, '/api/v1/documents')
++    .then((items) => { if (alive.current) setDocuments(items); });
++
++  const submit = async (event: React.FormEvent) => {
++    event.preventDefault();
++    setBusy(true); setError(''); setProbe(null);
++    try {
++      const result = await request<Probe>(base, '/api/v1/probes', 'POST', JSON.stringify({ departure, arrival, aircraft }));
++      if (alive.current) { setProbe(result); setStatus(await request<Status>(base, '/api/v1/status')); }
++    } catch (e) { if (alive.current) setError(e instanceof Error ? e.message : 'Ошибка запроса'); }
++    finally { if (alive.current) setBusy(false); }
++  };
++
++  const chooseTab = (value: string) => {
++    setTab(value); setError('');
++    if (value === 'documents') loadDocuments().catch((e: Error) => { if (alive.current) setError(e.message); });
++  };
++
++  const upload = async (file: File | undefined) => {
++    if (!file) return;
++    setBusy(true); setError('');
++    try {
++      if (file.size > 20 * 1024 * 1024) throw new Error('PDF должен быть меньше 20 МБ');
++      const bytes = await new Promise<ArrayBuffer>((resolve, reject) => {
++        const reader = new FileReader();
++        reader.onload = () => resolve(reader.result as ArrayBuffer);
++        reader.onerror = () => reject(new Error('Не удалось прочитать PDF'));
++        reader.readAsArrayBuffer(file);
++      });
++      const item = await request<DocumentInfo>(base,
++        '/api/v1/documents?icao=' + encodeURIComponent(chartIcao) + '&label=' + encodeURIComponent(file.name), 'POST', bytes);
++      if (alive.current) { setDocument(item); setPage(0); await loadDocuments(); }
++    } catch (e) { if (alive.current) setError(e instanceof Error ? e.message : 'Не удалось добавить PDF'); }
++    finally { if (alive.current) setBusy(false); }
++  };
++
++  return (
++    <div className={'fc-root' + (fenix ? ' fc-fenix' : '') + (embedded ? ' fc-embedded' : '')}>
++      <aside className="fc-sidebar">
++        <div className="fc-logo"><span>F</span><strong>Fly-calc</strong></div>
++        <p className="fc-eyebrow">FLIGHT DISPATCH</p>
++        <button className={tab === 'flight' ? 'active' : ''} onClick={() => chooseTab('flight')}><span>↗</span> План полёта</button>
++        <button className={tab === 'documents' ? 'active' : ''} onClick={() => chooseTab('documents')}><span>▤</span> Документы</button>
++        <button className={tab === 'data' ? 'active' : ''} onClick={() => chooseTab('data')}><span>◎</span> База и самолёты</button>
++        <div className="fc-sidebar-bottom"><span className={'fc-dot ' + (status ? 'online' : '')} /><span role="status">{status ? 'Локальный сервис подключён' : 'Нет соединения'}</span><small>Технический прототип · v0.1</small></div>
++      </aside>
++      <main className="fc-main">
++        <header className="fc-header"><div><p className="fc-eyebrow">{fenix ? 'FENIX · ИНТЕРФЕЙС ДЛЯ ПЛАНШЕТА' : 'YOUR NEXT FLIGHT'}</p><h1>{tab === 'flight' ? 'Подготовка рейса' : tab === 'documents' ? 'Полётные документы' : 'Источники данных'}</h1></div><span className="fc-badge">RESEARCH PREVIEW</span></header>
++        {fenix && <div className="fc-notice">Интерфейс адаптирован под экран Fenix. Добавление вкладки в штатный планшет самолёта пока не подтверждено.</div>}
++        <div className="fc-notice"><strong>Расчёт пока недоступен.</strong> Проверяем интеграцию и данные. Бесплатная полная мировая база процедур и точность профилей ещё не подтверждены.</div>
++        {error && <div className="fc-error" role="alert">{error}<button onClick={() => setConnectionTick(connectionTick + 1)}>Переподключить</button></div>}
++        {tab === 'flight' && <>
++          <form className="fc-card fc-form" onSubmit={submit}>
++            <div className="fc-card-title"><h2>Куда летим?</h2><span>01 / РЕЙС</span></div>
++            <div className="fc-route-inputs">
++              <label>АЭРОПОРТ ВЫЛЕТА<input aria-label="ICAO вылета" value={departure} maxLength={4} pattern="[A-Za-z]{4}" required onChange={(e) => setDeparture(e.target.value.toUpperCase())} /><small>ICAO · 4 буквы</small></label>
++              <button type="button" className="fc-swap" aria-label="Поменять аэропорты" onClick={() => { setDeparture(arrival); setArrival(departure); }}>⇄</button>
++              <label>АЭРОПОРТ ПРИЛЁТА<input aria-label="ICAO прилёта" value={arrival} maxLength={4} pattern="[A-Za-z]{4}" required onChange={(e) => setArrival(e.target.value.toUpperCase())} /><small>ICAO · 4 буквы</small></label>
++            </div>
++            <label className="fc-aircraft-label">САМОЛЁТ<select value={aircraft} onChange={(e) => setAircraft(e.target.value)}>{fleet.length ? fleet.map((a) => <option value={a.id} key={a.id}>{a.name} · {a.simulator}</option>) : <option value="fbw-a32nx">FlyByWire A32NX</option>}</select></label>
++            <div className="fc-submit-row"><p>Проверим аэропорты и связь с сервисом.<br />Маршрут и топливо не рассчитываются.</p><button className="fc-primary" disabled={busy || !status}>{busy ? 'Проверяем…' : 'Проверить рейс'} <span>→</span></button></div>
++          </form>
++          {probe && <section className="fc-card" aria-live="polite">
++            <div className="fc-card-title"><h2>Связь проверена</h2><span>ТЕСТОВЫЙ ОТВЕТ</span></div>
++            <div className="fc-airport-pair"><div><strong>{probe.departure.icao}</strong><p>{probe.departure.name}</p><small>{probe.departure.country}</small></div><span>→</span><div><strong>{probe.arrival.icao}</strong><p>{probe.arrival.name}</p><small>{probe.arrival.country}</small></div></div>
++            <div className="fc-metrics">{['Маршрут', 'Запасной', 'Топливо', 'Время'].map((label) => <div key={label}><span>{label}</span><strong>—</strong><small>Не рассчитано</small></div>)}</div>
++            {probe.document && <button className="fc-secondary" onClick={() => { setDocument(probe.document); setPage(0); chooseTab('documents'); }}>Открыть тестовый документ</button>}
++          </section>}
++          {!probe && <div className="fc-bottom-grid"><section className="fc-card"><p className="fc-eyebrow">НАВИГАЦИЯ</p><h2>{status ? status.airportCount.toLocaleString('ru-RU') : '—'} аэропортов</h2><p>OurAirports · мировой справочник<br />{status ? status.sources.enrouteCycle : 'Точки и трассы · нет связи'}</p></section><section className="fc-card"><p className="fc-eyebrow">ПРОФИЛИ САМОЛЁТОВ</p><h2>6 моделей</h2><p>MSFS и X-Plane<br />Калибровка до 5% ещё не выполнена</p></section></div>}
++        </>}
++        {tab === 'documents' && <div className="fc-doc-layout">
++          <section className="fc-card fc-doc-list"><h2>OFP и чарты</h2><p>Выберите PDF из списка. Документы показаны как изображения страниц.</p>
++            {documents.map((item) => <button key={item.id} className={'fc-doc-item ' + (document && item.id === document.id ? 'selected' : '')} onClick={() => { setDocument(item); setPage(0); }}><strong>{item.icao || 'TEST'} · {item.kind === 'probe' ? 'Тестовый OFP' : 'PDF'}</strong><small>{item.label}</small></button>)}
++            {!documents.length && <p>Документов пока нет.</p>}
++            <label>ICAO аэропорта<input aria-label="ICAO чарта" value={chartIcao} maxLength={4} onChange={(e) => setChartIcao(e.target.value.toUpperCase())} /></label>
++            <label className="fc-upload">Добавить свой PDF<input aria-label="Добавить PDF" type="file" accept="application/pdf,.pdf" disabled={busy || !status || !status.documentsAvailable} onChange={(e) => { upload(e.target.files ? e.target.files[0] : undefined); e.target.value = ''; }} /></label>
++            <small>Выбор локального файла доступен в Windows-интерфейсе. Возможность выбора файла в симуляторе требует отдельной проверки.</small>
++          </section>
++          <section className="fc-card fc-doc-view">{document ? <><div className="fc-page-tools"><button disabled={!page} onClick={() => setPage(page - 1)}>←</button><span>Страница {page + 1} / {document.pages}</span><button disabled={page + 1 >= document.pages} onClick={() => setPage(page + 1)}>→</button><a href={base + document.pdfUrl} target="_blank" rel="noreferrer">PDF ↗</a></div><img src={base + document.pageUrls[page]} alt={document.label + ', страница ' + (page + 1)} onError={() => setError('Не удалось загрузить страницу документа. Проверьте локальный сервис.')} /></> : <div className="fc-doc-empty">▤<h2>Документы вашего рейса</h2><p>Выберите файл, чтобы открыть его здесь.</p></div>}</section>
++        </div>}
++        {tab === 'data' && <section className="fc-card"><div className="fc-card-title"><h2>Готовность к полноценному расчёту</h2><span>НЕ ПОДТВЕРЖДЕНА</span></div><div className="fc-source-row"><strong>Аэропорты</strong><span>{status ? status.sources.airports : 'Нет связи'}</span></div><div className="fc-source-row"><strong>Маршрутные точки и трассы</strong><span>FlightGear · 2013.10 · исследовательская база</span></div><div className="fc-source-row"><strong>Мировые процедуры</strong><span>Полный бесплатный источник не подтверждён</span></div><div className="fc-source-row"><strong>RAD / NOTAM</strong><span>Не проверяются в прототипе</span></div><h2>Парк самолётов</h2>{fleet.map((a) => <div className="fc-source-row" key={a.id}><strong>{a.name}</strong><span>{a.simulator} · профиль не проверен</span></div>)}</section>}
++        <footer className="fc-footer">FLY-CALC <span>Для авиасимуляторов · исследовательский этап</span></footer>
++      </main>
++    </div>
++  );
++}
+--- /dev/null
++++ b/fbw-common/src/systems/instruments/src/EFB/FlyCalc/client.ts
+@@ -0,0 +1,67 @@
++export interface Airport {
++  icao: string;
++  name: string;
++  country: string;
++  latitude: number;
++  longitude: number;
++}
++export interface Aircraft {
++  id: string;
++  name: string;
++  simulator: string;
++  status: 'unverified';
++  accuracyPercent: null;
++}
++export interface Probe {
++  id: string;
++  status: 'integration-probe';
++  departure: Airport;
++  arrival: Airport;
++  aircraft: Aircraft;
++  route: null;
++  alternate: null;
++  fuel: null;
++  duration: null;
++  mass: null;
++  warnings: string[];
++  document: DocumentInfo | null;
++}
++export interface DocumentInfo {
++  id: string;
++  label: string;
++  icao: string;
++  kind: string;
++  pages: number;
++  pdfUrl: string;
++  pageUrls: string[];
++}
++export interface Status {
++  apiVersion: '1';
++  worldRoutingReady: false;
++  airportCount: number;
++  documentsAvailable: boolean;
++  sources: { airports: string; enrouteCycle: string; procedures: string };
++  fenix: { cockpitIntegration: 'unconfirmed'; companionUrl: string };
++}
++
++// Use the existing flyPad XHR style and ES2017; actual simulator runtime still needs validation.
++// Do not introduce Node APIs or depend on AbortController in the instrument.
++export function request<T>(base: string, path: string, method = 'GET', data?: string | ArrayBuffer): Promise<T> {
++  return new Promise((resolve, reject) => {
++    const xhr = new XMLHttpRequest();
++    xhr.open(method, base + path);
++    xhr.timeout = method === 'POST' ? 55000 : 15000;
++    if (typeof data === 'string') xhr.setRequestHeader('Content-Type', 'application/json');
++    else if (data) xhr.setRequestHeader('Content-Type', 'application/pdf');
++    xhr.onload = () => {
++      try {
++        const result = JSON.parse(xhr.responseText);
++        if (xhr.status < 200 || xhr.status >= 300) reject(new Error(result.error || 'Ошибка сервиса'));
++        else resolve(result as T);
++      } catch (_) { reject(new Error('Сервис вернул некорректный ответ')); }
++    };
++    xhr.onerror = () => reject(new Error('Нет связи с Fly-calc. Запустите локальное приложение Windows.'));
++    xhr.ontimeout = () => reject(new Error('Сервис не ответил за ' + xhr.timeout / 1000 + ' секунд. Повторите запрос.'));
++    xhr.send(data === undefined ? null : data);
++  });
++}
+--- /dev/null
++++ b/fbw-common/src/systems/instruments/src/EFB/FlyCalc/flycalc.css
+@@ -0,0 +1,4 @@
++.fc-root{--fc-bg:#0b1220;--fc-card:#131e30;--fc-border:#243248;--fc-text:#edf3fa;--fc-muted:#93a5bd;--fc-accent:#60dec5;display:flex;min-height:100%;background:var(--fc-bg);color:var(--fc-text);font-family:Inter,"Segoe UI",Arial,sans-serif;font-size:16px;line-height:1.5;box-sizing:border-box}
++.fc-root *{box-sizing:border-box}.fc-root button,.fc-root input,.fc-root select{font:inherit}.fc-root button{cursor:pointer}.fc-root button:disabled{opacity:.45;cursor:default}.fc-root button:focus-visible,.fc-root input:focus-visible,.fc-root select:focus-visible,.fc-root a:focus-visible{outline:2px solid var(--fc-accent);outline-offset:4px}.fc-sidebar{width:245px;flex-shrink:0;border-right:1px solid var(--fc-border);padding:32px 20px;display:flex;flex-direction:column}.fc-logo{display:flex;gap:12px;align-items:center;margin-bottom:45px;font-size:24px;letter-spacing:-1px}.fc-logo>span{display:grid;place-items:center;width:42px;height:42px;border-radius:12px;background:var(--fc-accent);color:#08241f;font-weight:800;font-style:italic}.fc-eyebrow{letter-spacing:2px;font-size:11px;font-weight:700;color:var(--fc-muted);margin:0 0 12px}.fc-sidebar>button{border:0;background:transparent;text-align:left;color:var(--fc-muted);padding:14px 12px;border-radius:10px;margin-bottom:8px;display:flex;gap:14px;align-items:center}.fc-sidebar>button span{font-size:22px}.fc-sidebar>button.active{color:var(--fc-accent);background:#193c3a}.fc-sidebar-bottom{margin-top:auto;padding-top:60px;font-size:12px;color:var(--fc-muted)}.fc-sidebar-bottom small{display:block;margin-top:12px}.fc-dot{display:inline-block;width:7px;height:7px;border-radius:50%;background:#d77964;margin-right:8px}.fc-dot.online{background:var(--fc-accent)}.fc-main{flex:1;min-width:0;padding:40px 48px;max-width:1500px}.fc-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:28px}.fc-root h1{font-size:32px;letter-spacing:-1px;margin:0;font-weight:650}.fc-root h2{font-size:20px;margin:0 0 16px;font-weight:600}.fc-root p{color:var(--fc-muted)}.fc-badge{font-size:10px;letter-spacing:1.5px;color:var(--fc-accent);background:#173431;padding:8px 12px;border:1px solid #28514a;border-radius:6px}.fc-notice{border:1px solid #61523b;background:#28261f;color:#d8c393;border-radius:10px;padding:13px 18px;margin-bottom:18px;font-size:13px}.fc-notice strong{color:#f4e2bb}.fc-card{background:var(--fc-card);border:1px solid var(--fc-border);border-radius:16px;padding:28px;margin-bottom:22px}.fc-card-title{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:20px;gap:12px}.fc-card-title h2{margin:0}.fc-card-title>span{font-size:10px;letter-spacing:1.5px;color:var(--fc-muted)}.fc-root label{display:block;font-size:11px;font-weight:700;letter-spacing:1.5px;color:var(--fc-muted)}.fc-root input,.fc-root select{display:block;width:100%;border:1px solid #36435a;background:#0e1828;color:var(--fc-text);border-radius:10px;padding:14px 16px;margin:8px 0;letter-spacing:0}.fc-root input{font-size:20px}.fc-route-inputs{display:flex;align-items:center;gap:24px;margin-bottom:28px}.fc-route-inputs>label{flex:1;min-width:0}.fc-route-inputs input{font-size:36px;font-weight:650;letter-spacing:4px;padding:20px}.fc-route-inputs small{font-size:11px;font-weight:400;letter-spacing:0}.fc-swap{width:44px;height:44px;border-radius:50%;border:1px solid var(--fc-border);background:#1c2a3f;color:var(--fc-accent);margin-top:12px;font-size:24px!important}.fc-aircraft-label select{font-size:16px;padding:16px}.fc-submit-row{display:flex;align-items:center;justify-content:space-between;gap:24px;margin-top:24px;padding-top:20px;border-top:1px solid var(--fc-border)}.fc-submit-row p{font-size:12px;margin:0}.fc-primary,.fc-secondary{border:0;background:var(--fc-accent);color:#092c26;border-radius:10px;padding:14px 22px;font-weight:700!important}.fc-primary span{margin-left:28px}.fc-secondary{background:#223a49;color:var(--fc-text)}.fc-error{color:#ffb8af;background:#412323;border:1px solid #7e4545;padding:14px 18px;border-radius:10px;margin-bottom:20px;display:flex;gap:14px;align-items:center;justify-content:space-between}.fc-error button{background:transparent;border:1px solid #936060;color:#ffb8af;border-radius:6px;padding:5px 10px}.fc-bottom-grid{display:grid;grid-template-columns:1fr 1fr;gap:22px}.fc-bottom-grid .fc-card p{font-size:13px}.fc-airport-pair{display:flex;align-items:center;gap:32px;margin:16px 0 28px}.fc-airport-pair div{flex:1}.fc-airport-pair strong{font-size:32px}.fc-airport-pair p{font-size:13px;margin:6px 0}.fc-airport-pair small{color:var(--fc-muted)}.fc-airport-pair>span{color:var(--fc-accent);font-size:25px}.fc-metrics{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--fc-border);padding-top:22px;margin-bottom:20px;gap:12px}.fc-metrics div{display:flex;flex-direction:column}.fc-metrics span,.fc-metrics small{font-size:12px;color:var(--fc-muted)}.fc-metrics strong{font-size:24px}.fc-doc-layout{display:grid;grid-template-columns:280px minmax(0,1fr);gap:20px}.fc-doc-list{padding:22px}.fc-doc-list p,.fc-doc-list small{font-size:12px;color:var(--fc-muted)}.fc-doc-item{display:block;width:100%;text-align:left;border:1px solid var(--fc-border);background:#0e1828;color:var(--fc-text);padding:12px;border-radius:8px;margin-bottom:10px}.fc-doc-item strong,.fc-doc-item small{display:block;overflow-wrap:anywhere}.fc-doc-item.selected{border-color:var(--fc-accent)}.fc-upload{margin-top:22px}.fc-upload input{font-size:11px;padding:10px}.fc-doc-view{padding:18px;overflow:auto;max-height:1100px}.fc-doc-view img{width:100%;height:auto;display:block;margin-top:18px}.fc-page-tools{display:flex;align-items:center;gap:16px;font-size:12px}.fc-page-tools button{border:1px solid var(--fc-border);background:#1c2a3f;color:var(--fc-text);border-radius:5px;padding:4px 12px}.fc-page-tools a{margin-left:auto;color:var(--fc-accent)}.fc-doc-empty{min-height:420px;display:flex;flex-direction:column;align-items:center;justify-content:center;color:var(--fc-muted);font-size:48px}.fc-doc-empty h2{color:var(--fc-text);margin:16px 0 0}.fc-doc-empty p{font-size:13px}.fc-source-row{display:flex;gap:18px;justify-content:space-between;padding:16px 0;border-bottom:1px solid var(--fc-border);font-size:13px}.fc-source-row span{color:var(--fc-muted);text-align:right}.fc-source-row+h2{margin-top:32px}.fc-footer{display:flex;justify-content:space-between;font-size:10px;letter-spacing:1px;color:#62748c;margin-top:12px;padding-bottom:20px}.fc-fenix .fc-route-inputs input{padding:28px}.fc-fenix button{min-height:48px}.fc-fenix .fc-main{max-width:none}
++@media(max-width:1050px){.fc-main{padding:28px}.fc-sidebar{width:200px;padding:28px 14px}.fc-submit-row{flex-wrap:wrap}.fc-header{gap:16px}.fc-root h1{font-size:27px}.fc-doc-layout{grid-template-columns:220px minmax(0,1fr)}}@media(max-width:760px){.fc-root{flex-direction:column}.fc-sidebar{width:100%;padding:14px;flex-direction:row;align-items:center;gap:8px;border-right:0;border-bottom:1px solid var(--fc-border)}.fc-logo{margin:0;font-size:18px}.fc-logo>span{width:30px;height:30px}.fc-sidebar>.fc-eyebrow,.fc-sidebar-bottom{display:none}.fc-sidebar>button{font-size:11px;margin:0;padding:9px}.fc-sidebar>button span{display:none}.fc-main{padding:20px}.fc-header{align-items:flex-start}.fc-badge{font-size:8px}.fc-card{padding:20px}.fc-route-inputs{gap:12px}.fc-route-inputs input{font-size:26px;padding:16px}.fc-bottom-grid,.fc-doc-layout{grid-template-columns:1fr}.fc-metrics{grid-template-columns:repeat(2,1fr)}.fc-source-row{flex-direction:column;gap:4px}.fc-source-row span{text-align:left}.fc-footer span{max-width:55%;text-align:right}}
++.fc-embedded{height:calc(100vh - 56px);min-height:0;overflow-y:auto}.fc-embedded .fc-main{padding:24px}.fc-embedded .fc-doc-view{max-height:calc(100vh - 245px)}.fc-embedded button{min-height:44px}

@@ -1,0 +1,19 @@
+{
+  "status": "passed",
+  "platform": "Windows x64",
+  "electron": "44.7.0",
+  "serviceInitiallyRunning": false,
+  "checks": [
+    "window loads local UI",
+    "API connection",
+    "six profiles",
+    "probe returns null computations",
+    "renderer has no Node require",
+    "sandbox enabled",
+    "automatic service start",
+    "owned service stops on exit"
+  ],
+  "pageErrors": [],
+  "visualCheck": "browser preview only; Electron tested with hidden window",
+  "inSimulator": "not_run"
+}
