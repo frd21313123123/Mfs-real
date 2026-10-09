@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "realflow-traffic"
-version = "0.1.0"
+version = "0.2.0a1"
 description = "MSFS 2020 hybrid live and simulated traffic prototype using local FSLTL models"
 readme = "README.md"
 requires-python = ">=3.10"
