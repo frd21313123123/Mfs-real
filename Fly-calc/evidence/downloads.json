@@ -1,0 +1,359 @@
+{
+  "fetchedAt": "2026-10-09T08:51:27.786163+00:00",
+  "records": [
+    {
+      "url": "https://api.github.com/repos/flybywiresim/aircraft/commits/672384b9602a84d6832b8852cd6ec0abdd006f85",
+      "path": "evidence/upstream/msfs2020/commit.json",
+      "bytes": 42280,
+      "sha256": "53b70010fa014af0b9bd5e6e34a40b0476311278ae80aa5479ce167a592e6c5a",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://api.github.com/repos/flybywiresim/aircraft/git/trees/672384b9602a84d6832b8852cd6ec0abdd006f85?recursive=1",
+      "path": "evidence/upstream/msfs2020/tree.json",
+      "bytes": 1167119,
+      "sha256": "0169b86f67380fb7a0a358c59bdd6f95ca191244e5bb990894da204f2619ed35",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/672384b9602a84d6832b8852cd6ec0abdd006f85/.gitmodules",
+      "path": "evidence/upstream/msfs2020/.gitmodules",
+      "bytes": 115,
+      "sha256": "b48ae68a252663dd12e458e5976d7f2c32f72e416e27e4c58e2ea0a92408c1fc",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/672384b9602a84d6832b8852cd6ec0abdd006f85/LICENSE",
+      "path": "evidence/upstream/msfs2020/LICENSE",
+      "bytes": 35149,
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/672384b9602a84d6832b8852cd6ec0abdd006f85/fbw-common/src/systems/instruments/src/EFB/Efb.tsx",
+      "path": "evidence/upstream/msfs2020/fbw-common/src/systems/instruments/src/EFB/Efb.tsx",
+      "bytes": 20386,
+      "sha256": "5733bd323e88d178a2030a6f4b4d8e2460065af23ce7ad7b818a095008016141",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/672384b9602a84d6832b8852cd6ec0abdd006f85/fbw-common/src/systems/instruments/src/EFB/ToolBar/ToolBar.tsx",
+      "path": "evidence/upstream/msfs2020/fbw-common/src/systems/instruments/src/EFB/ToolBar/ToolBar.tsx",
+      "bytes": 2680,
+      "sha256": "3a510f171804d1967cb80ae2a6b5341fb238ce5be93d5e8768b932587a361d5c",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/672384b9602a84d6832b8852cd6ec0abdd006f85/package.json",
+      "path": "evidence/upstream/msfs2020/package.json",
+      "bytes": 15485,
+      "sha256": "27ecbc46576a20bd6c856d3a9ddb4b9e56bb46408d5805044f2c8df32e267a2f",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/672384b9602a84d6832b8852cd6ec0abdd006f85/scripts/build.sh",
+      "path": "evidence/upstream/msfs2020/scripts/build.sh",
+      "bytes": 1661,
+      "sha256": "196046ae46d6a22300d5f34bf725f1742cc79e5f90fe6267dc3c8e04dd890eb0",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/672384b9602a84d6832b8852cd6ec0abdd006f85/scripts/dev-env/run.cmd",
+      "path": "evidence/upstream/msfs2020/scripts/dev-env/run.cmd",
+      "bytes": 369,
+      "sha256": "2979cd99b2f57203c1c97048b2f4a11bf943e744139cea47c59d297e916654d0",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/672384b9602a84d6832b8852cd6ec0abdd006f85/scripts/setup.sh",
+      "path": "evidence/upstream/msfs2020/scripts/setup.sh",
+      "bytes": 598,
+      "sha256": "4f6db01510b71fbacbda0634159ed124d432459800c1f111ccd2e9dfff3e0b85",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://api.github.com/repos/flybywiresim/aircraft/commits/255546cb02db1c7b40d2505ac621a9d36748d258",
+      "path": "evidence/upstream/msfs2024/commit.json",
+      "bytes": 9583,
+      "sha256": "c25d937b6c4985f91b728e3560684fcdb63aaf10e29bf37585b94c515a2824e0",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://api.github.com/repos/flybywiresim/aircraft/git/trees/255546cb02db1c7b40d2505ac621a9d36748d258?recursive=1",
+      "path": "evidence/upstream/msfs2024/tree.json",
+      "bytes": 1260360,
+      "sha256": "c733e534bb37645fd545f8dea75e2c7aaff1a3e79ff1e41aedbbed9fe11c7997",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/255546cb02db1c7b40d2505ac621a9d36748d258/.gitmodules",
+      "path": "evidence/upstream/msfs2024/.gitmodules",
+      "bytes": 115,
+      "sha256": "b48ae68a252663dd12e458e5976d7f2c32f72e416e27e4c58e2ea0a92408c1fc",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/255546cb02db1c7b40d2505ac621a9d36748d258/AGENTS.md",
+      "path": "evidence/upstream/msfs2024/AGENTS.md",
+      "bytes": 10601,
+      "sha256": "63493040904eb5283790d258ee0d081f78e5c372f1055a9ec2c71938161c15cd",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/255546cb02db1c7b40d2505ac621a9d36748d258/LICENSE",
+      "path": "evidence/upstream/msfs2024/LICENSE",
+      "bytes": 35149,
+      "sha256": "3972dc9744f6499f0f9b2dbf76696f2ae7ad8af9b23dde66d6af86c9dfb36986",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/255546cb02db1c7b40d2505ac621a9d36748d258/fbw-a32nx/AGENTS.md",
+      "path": "evidence/upstream/msfs2024/fbw-a32nx/AGENTS.md",
+      "bytes": 5607,
+      "sha256": "d783e8a8dcb3d722de35dd004b482fc1828b702492f72fa09deee1a0b7ececc7",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/255546cb02db1c7b40d2505ac621a9d36748d258/fbw-common/src/systems/instruments/src/EFB/Efb.tsx",
+      "path": "evidence/upstream/msfs2024/fbw-common/src/systems/instruments/src/EFB/Efb.tsx",
+      "bytes": 20386,
+      "sha256": "5733bd323e88d178a2030a6f4b4d8e2460065af23ce7ad7b818a095008016141",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/255546cb02db1c7b40d2505ac621a9d36748d258/fbw-common/src/systems/instruments/src/EFB/ToolBar/ToolBar.tsx",
+      "path": "evidence/upstream/msfs2024/fbw-common/src/systems/instruments/src/EFB/ToolBar/ToolBar.tsx",
+      "bytes": 2680,
+      "sha256": "3a510f171804d1967cb80ae2a6b5341fb238ce5be93d5e8768b932587a361d5c",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/255546cb02db1c7b40d2505ac621a9d36748d258/package.json",
+      "path": "evidence/upstream/msfs2024/package.json",
+      "bytes": 13418,
+      "sha256": "1472df275649a6b3dd4f6a2c0ce5dcf2acca62066dbf5555813ccd914562bd4a",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/255546cb02db1c7b40d2505ac621a9d36748d258/scripts/build.sh",
+      "path": "evidence/upstream/msfs2024/scripts/build.sh",
+      "bytes": 1661,
+      "sha256": "196046ae46d6a22300d5f34bf725f1742cc79e5f90fe6267dc3c8e04dd890eb0",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/255546cb02db1c7b40d2505ac621a9d36748d258/scripts/dev-env/run.cmd",
+      "path": "evidence/upstream/msfs2024/scripts/dev-env/run.cmd",
+      "bytes": 369,
+      "sha256": "fdc39478b0553ceaa9ac8b168cec5ea7635389ba61137447864339d2bda7d6ef",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/255546cb02db1c7b40d2505ac621a9d36748d258/scripts/setup.sh",
+      "path": "evidence/upstream/msfs2024/scripts/setup.sh",
+      "bytes": 598,
+      "sha256": "4f6db01510b71fbacbda0634159ed124d432459800c1f111ccd2e9dfff3e0b85",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/navaids.csv",
+      "path": "data/raw/ourairports/navaids.csv",
+      "bytes": 1524946,
+      "sha256": "57fb332b75be1173c45fd97447611eb3fba07b2c508c2f330961b9a8976e24cb",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/countries.csv",
+      "path": "data/raw/ourairports/countries.csv",
+      "bytes": 24583,
+      "sha256": "2a9dbee691125b0cdb8ceb5fe227c48c903f99c488963b8e53e2ab366521c639",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/runways.csv",
+      "path": "data/raw/ourairports/runways.csv",
+      "bytes": 3969443,
+      "sha256": "19269d990f0dfad188aa3c3559405de870eec28afe91ce9d3f398deee68d11c1",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://aeronav.faa.gov/Upload_313-d/cifp/CIFP%20Readme.pdf",
+      "path": "data/raw/faa/CIFP-Readme.pdf",
+      "bytes": 245682,
+      "sha256": "38aff4c786dc261460232d13ed5ab115e35cb526d7c491304ffb21d9a52959a4",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/davidmegginson/ourairports-data/main/airports.csv",
+      "path": "data/raw/ourairports/airports.csv",
+      "bytes": 12743186,
+      "sha256": "0673f846680d703dd4ff81b6c1f557ddf09eb73df164c3ea98623fdd72545333",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://aeronav.faa.gov/Upload_313-d/cifp/CIFP_261001.zip",
+      "path": "data/raw/faa/CIFP_261001.zip",
+      "bytes": 8842001,
+      "sha256": "b7ff9860f261de071499a7d6822935a85c9f4c4f1230e49ddb8585e20ebfa6b4",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://gitlab.com/api/v4/projects/flightgear%2Ffgdata/repository/commits?per_page=1",
+      "path": "evidence/upstream/flightgear/commits.json",
+      "bytes": 677,
+      "sha256": "9d1f1bcba3391547fba0bee3984af8b972764ed8b02cbf461b82686c9a24a2c9",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://gitlab.com/api/v4/projects/flightgear%2Ffgdata/repository/tree?ref=b7b6071beac21f604dcc65d3aad276c07a378b0d&per_page=100",
+      "path": "evidence/upstream/flightgear/root-tree.json",
+      "bytes": 5267,
+      "sha256": "538bb236469adace672a1926825fc3e5994ae0c3d8acfe666619ba9e50543f93",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://gitlab.com/api/v4/projects/flightgear%2Ffgdata/repository/tree?ref=b7b6071beac21f604dcc65d3aad276c07a378b0d&path=Navaids&per_page=100",
+      "path": "evidence/upstream/flightgear/navaids-tree.json",
+      "bytes": 1445,
+      "sha256": "81c15922661328f4ec50b92f43cce73c8f217ac837cf295576822a88f5399669",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://gitlab.com/flightgear/fgdata/-/raw/b7b6071beac21f604dcc65d3aad276c07a378b0d/Navaids/nav.dat.gz",
+      "path": "data/raw/flightgear/nav.dat.gz",
+      "bytes": 681007,
+      "sha256": "6274e9722782e24b9f318d677b52206c99b1e01a42372998658417fbb2fc836c",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://gitlab.com/flightgear/fgdata/-/raw/b7b6071beac21f604dcc65d3aad276c07a378b0d/Navaids/fix.dat.gz",
+      "path": "data/raw/flightgear/fix.dat.gz",
+      "bytes": 1517795,
+      "sha256": "0be045e8acdcb2cf0656084063d58768976da4cd02902542e1bdb1fe44c23b95",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://gitlab.com/flightgear/fgdata/-/raw/b7b6071beac21f604dcc65d3aad276c07a378b0d/Navaids/awy.dat.gz",
+      "path": "data/raw/flightgear/awy.dat.gz",
+      "bytes": 1746444,
+      "sha256": "8cd8d9a960b2bac7a7f2bd60b25ca89fba69cffc9e21d7cb811a30297fd2ca03",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://gitlab.com/flightgear/fgdata/-/raw/b7b6071beac21f604dcc65d3aad276c07a378b0d/COPYING",
+      "path": "data/raw/flightgear/COPYING",
+      "status": "failed",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://gitlab.com/flightgear/fgdata/-/raw/b7b6071beac21f604dcc65d3aad276c07a378b0d/COPYING.txt",
+      "path": "data/raw/flightgear/COPYING.txt",
+      "status": "failed",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://gitlab.com/flightgear/fgdata/-/raw/b7b6071beac21f604dcc65d3aad276c07a378b0d/LICENSE",
+      "path": "data/raw/flightgear/LICENSE",
+      "status": "failed",
+      "error": "HTTP Error 404: Not Found"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/672384b9602a84d6832b8852cd6ec0abdd006f85/igniter.config.mjs",
+      "path": "evidence/upstream/msfs2020/igniter.config.mjs",
+      "bytes": 12628,
+      "sha256": "2e4b1fe4dad376e4aaabff52efb2a4fd49acb611df50cb92b6a3fe56af5f8d75",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/672384b9602a84d6832b8852cd6ec0abdd006f85/fbw-a32nx/mach.config.js",
+      "path": "evidence/upstream/msfs2020/fbw-a32nx/mach.config.js",
+      "bytes": 2370,
+      "sha256": "f8fdf436884eabea90c83ef4877057721528fbc90ebfe0c04322b00c31182ea3",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/672384b9602a84d6832b8852cd6ec0abdd006f85/fbw-a32nx/src/systems/instruments/src/EFB/tsconfig.json",
+      "path": "evidence/upstream/msfs2020/fbw-a32nx/src/systems/instruments/src/EFB/tsconfig.json",
+      "bytes": 105,
+      "sha256": "c28899e94c8e688205ae6a547b77f6a63326b55d781c1efb4e57d7af527e438e",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/672384b9602a84d6832b8852cd6ec0abdd006f85/fbw-a32nx/src/systems/instruments/tsconfig.react.json",
+      "path": "evidence/upstream/msfs2020/fbw-a32nx/src/systems/instruments/tsconfig.react.json",
+      "bytes": 169,
+      "sha256": "66c525795fee1fed28b49d80161a8fd319c2baa4d221b6dc224d9fe561c1e3ca",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/672384b9602a84d6832b8852cd6ec0abdd006f85/fbw-common/src/systems/instruments/src/EFB/tsconfig.json",
+      "path": "evidence/upstream/msfs2020/fbw-common/src/systems/instruments/src/EFB/tsconfig.json",
+      "bytes": 43,
+      "sha256": "baf03b47a4ad1a620f84aa5a7e7d25e48674f625056ae3fec064c8ac3cf7c75b",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/255546cb02db1c7b40d2505ac621a9d36748d258/igniter.config.mjs",
+      "path": "evidence/upstream/msfs2024/igniter.config.mjs",
+      "bytes": 11558,
+      "sha256": "8a3aaefd341aa5a33df8254d27826e1f819404478649995ca1e1863b8d6aafa2",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/255546cb02db1c7b40d2505ac621a9d36748d258/fbw-a32nx/mach.config.js",
+      "path": "evidence/upstream/msfs2024/fbw-a32nx/mach.config.js",
+      "bytes": 2406,
+      "sha256": "74b361418aa9b35b0fcef6eeef667864296d3077811825e9e995a5cf7b7e2c1d",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/255546cb02db1c7b40d2505ac621a9d36748d258/fbw-a32nx/src/systems/instruments/src/EFB/tsconfig.json",
+      "path": "evidence/upstream/msfs2024/fbw-a32nx/src/systems/instruments/src/EFB/tsconfig.json",
+      "bytes": 105,
+      "sha256": "c28899e94c8e688205ae6a547b77f6a63326b55d781c1efb4e57d7af527e438e",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/255546cb02db1c7b40d2505ac621a9d36748d258/fbw-a32nx/src/systems/instruments/tsconfig.react.json",
+      "path": "evidence/upstream/msfs2024/fbw-a32nx/src/systems/instruments/tsconfig.react.json",
+      "bytes": 169,
+      "sha256": "66c525795fee1fed28b49d80161a8fd319c2baa4d221b6dc224d9fe561c1e3ca",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://raw.githubusercontent.com/flybywiresim/aircraft/255546cb02db1c7b40d2505ac621a9d36748d258/fbw-common/src/systems/instruments/src/EFB/tsconfig.json",
+      "path": "evidence/upstream/msfs2024/fbw-common/src/systems/instruments/src/EFB/tsconfig.json",
+      "bytes": 43,
+      "sha256": "baf03b47a4ad1a620f84aa5a7e7d25e48674f625056ae3fec064c8ac3cf7c75b",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://gitlab.com/flightgear/fgdata/-/raw/b7b6071beac21f604dcc65d3aad276c07a378b0d/LICENSE.md",
+      "path": "data/raw/flightgear/LICENSE.md",
+      "bytes": 17921,
+      "sha256": "451d3aa0291bac2c0826061ede585cbadd12b2237a84624f4d611986f371d73c",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://gitlab.com/flightgear/fgdata/-/raw/b7b6071beac21f604dcc65d3aad276c07a378b0d/Navaids/ReadMe.FG226.txt",
+      "path": "data/raw/flightgear/ReadMe.FG226.txt",
+      "bytes": 10078,
+      "sha256": "6a9d75b3d613444cae60e4e47def83c58c41c5c72b195624be3be54d362b12e8",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://api.core.openaip.net/api/system/specs/v1/schema.json",
+      "path": "evidence/openaip-schema.json",
+      "bytes": 141608,
+      "sha256": "334afe568c87bdd15bfdf86e4d9e4252aa34d20ced2c4d3d0c8b77d7f0a7f3d8",
+      "status": "downloaded"
+    },
+    {
+      "url": "https://aeronav.faa.gov/Upload_313-d/cifp/CIFP_260903.zip",
+      "path": "data/raw/faa/CIFP_260903.zip",
+      "bytes": 9109532,
+      "sha256": "ae016b916fef71dcf6cf25778636c8607191357886d80b8e7e5faf33727606e1",
+      "status": "downloaded"
+    }
+  ]
+}
