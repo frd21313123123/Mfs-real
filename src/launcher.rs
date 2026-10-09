@@ -148,6 +148,8 @@ struct Launcher {
     download_events: Option<mpsc::Receiver<DownloadEvent>>,
     download_cancel: std::sync::Arc<std::sync::atomic::AtomicBool>,
     installer: Option<PathBuf>,
+    scenery_tab: bool,
+    scenery_panel: crate::scenery_ui::SceneryPanel,
 }
 enum DownloadEvent {
     Progress(u64),
@@ -187,6 +189,8 @@ impl Launcher {
             download_events: None,
             download_cancel: std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false)),
             installer: None,
+            scenery_tab: false,
+            scenery_panel: crate::scenery_ui::SceneryPanel::default(),
         }
     }
     fn download_installer(&mut self) {
@@ -529,8 +533,16 @@ impl eframe::App for Launcher {
                 }
             });
             ui.label(&self.status);
+            ui.horizontal(|ui| {
+                ui.selectable_value(&mut self.scenery_tab, false, "Трафик и ATC");
+                ui.selectable_value(&mut self.scenery_tab, true, "Сценарии аэропортов");
+            });
         });
-        egui::CentralPanel::default().show(ctx,|ui|{egui::ScrollArea::vertical().show(ui,|ui|{
+        egui::CentralPanel::default().show(ctx,|ui|{
+            if self.scenery_tab {
+                self.scenery_panel.ui(ui);
+            } else {
+                egui::ScrollArea::vertical().show(ui,|ui|{
             ui.columns(2,|columns|{
                 let ui=&mut columns[0];ui.heading("Настройки трафика");
                 egui::ComboBox::from_label("Источник").selected_text(&self.settings.mode).show_ui(ui,|ui|{for mode in ["hybrid","live","simulation"]{ui.selectable_value(&mut self.settings.mode,mode.into(),mode);}});
@@ -569,7 +581,9 @@ impl eframe::App for Launcher {
             ui.horizontal(|ui|{ui.label("Радио пилота");ui.text_edit_singleline(&mut self.radio_input);if ui.add_enabled(self.process.is_some(),egui::Button::new("Передать")).clicked()&& let Some(stdin)=self.process.as_mut().and_then(|p|p.stdin.as_mut()){let result=writeln!(stdin,"{}",self.radio_input).and_then(|_|stdin.flush()).map_err(Into::into);self.result(result);self.radio_input.clear();}});
             ui.label("Команды: /status, /quit. Изменения настроек действуют при следующем запуске.");
             ui.add(egui::TextEdit::multiline(&mut self.log).font(egui::TextStyle::Monospace).desired_width(f32::INFINITY).desired_rows(10).interactive(false));
-        });});
+        });
+            }
+        });
         if self.confirm_msfs {
             egui::Window::new("Экспериментальное подключение")
                 .collapsible(false)
