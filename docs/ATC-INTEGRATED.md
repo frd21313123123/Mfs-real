@@ -15,11 +15,11 @@
 
 ## Fast verification without simulator
 
-    py -3 -m pip install -e . pytest
-    py -3 -m pytest -q
-    py -3 -m realflow.atc_demo --steps 600 --output atc-demo-results.json
+    cargo build --locked --release
+    cargo test --locked --all-targets
+    realflow.exe atc-demo --steps 600 --output atc-demo-results.json
 
-This uses fictional airport geometry, fictional frequencies and placeholder model titles with MockBridge only. CI runs the scenario on Windows and Linux using Python 3.11 and 3.13.
+This uses fictional airport geometry, fictional frequencies and placeholder model titles with MockBridge only. CI runs the native Rust scenario on Windows and Linux using Rust 1.90.0.
 
 ## Windows MSFS 2020 setup
 
@@ -27,20 +27,20 @@ This uses fictional airport geometry, fictional frequencies and placeholder mode
 2. Export scenery-editor SOURCE XML of the chosen airport to a JSON graph. Verify all taxi edges, runway tags, gates, elevations and scenery placement in-game. Compiled BGL extraction is not supported.
 3. Download an optional OurAirports frequency directory (community maintained, NOT authoritative), and verify the needed frequencies against official published information:
 
-    py -3 -m realflow.atc_cli update
-    py -3 -m realflow.atc_cli frequencies --icao UUEE
+    realflow.exe atc update
+    realflow.exe atc frequencies --icao UUEE
 
 4. Convert scenery editor XML, inspect the result and correct it before use:
 
-    py -3 -m realflow convert-airport --xml "C:\airport-project\airport.xml" --icao UUEE --output "C:\realflow\UUEE_verified.json"
+    realflow.exe convert-airport --xml "C:\airport-project\airport.xml" --icao UUEE --output "C:\realflow\UUEE_verified.json"
 
-5. Install optional local/offline Vosk ASR and Windows speech:
+5. Install an optional local 16 kHz Vosk model and the native Vosk DLLs beside realflow.exe. Speech output uses built-in Windows SAPI:
 
-    py -3 -m pip install vosk sounddevice pyttsx3
+    # No Python packages required. See README for VOSK_DLL.
 
 6. Start an experimental unified ATC plus traffic session:
 
-    py -3 -m realflow run --bridge simconnect --fsltl "D:\MSFS\Community\fsltl-traffic-base" --airport "C:\realflow\UUEE_verified.json" --atc-csv "%USERPROFILE%\.realflow\airport-frequencies.csv" --atc-airborne --atc-voice --pilot-callsign AFL101 --pilot-destination ULLI --pilot-runway 24L --pilot-voice-model "C:\models\vosk-model-en-us" --allow-motion
+    realflow.exe run --bridge simconnect --fsltl "D:\MSFS\Community\fsltl-traffic-base" --airport "C:\realflow\UUEE_verified.json" --atc-csv "%USERPROFILE%\.realflow\airport-frequencies.csv" --atc-airborne --atc-voice --pilot-callsign AFL101 --pilot-destination ULLI --pilot-runway 24L --pilot-voice-model "C:\models\vosk-model-en-us" --allow-motion
 
 The runway designator must map uniquely onto a graph runway tag. A mismatch causes an error rather than allowing divergent runway locks. The pilot controls the actual cockpit COM1/COM2 for voice frequency and the transponder for squawk. The program never sets the player's radios or flight controls.
 

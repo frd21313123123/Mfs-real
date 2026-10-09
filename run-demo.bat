@@ -1,5 +1,10 @@
 @echo off
 cd /d "%~dp0"
-py -3 -m realflow doctor
-py -3 -m realflow demo --steps 480 --output demo-results.json
+if exist "realflow.exe" (
+  "realflow.exe" demo --steps 600 --output "%TEMP%\realflow-demo-results.json"
+) else (
+  "target\release\realflow.exe" demo --steps 600 --output "%TEMP%\realflow-demo-results.json"
+)
+set "realflow_exit=%ERRORLEVEL%"
 pause
+exit /b %realflow_exit%

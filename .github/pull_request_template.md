@@ -1,8 +1,8 @@
 ## What changed
 
 ## Tests
-- [ ] `python -m pytest -q`
-- [ ] `python -m realflow demo --steps 240`
+- [ ] `cargo test --locked --all-targets`
+- [ ] `cargo run --locked --bin realflow -- demo --steps 240 --output target/demo-results.json`
 - [ ] Windows build (when applicable)
 
 ## Simulator verification

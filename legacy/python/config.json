@@ -1,0 +1,14 @@
+{
+  "mode": "hybrid",
+  "airborne_limit": 35,
+  "ground_limit": 30,
+  "realistic_taxi": true,
+  "runway_control": true,
+  "sync_real_flights": true,
+  "fetch_seconds": 120,
+  "max_radius_km": 120.0,
+  "fps_target": 35,
+  "fsltl_path": "",
+  "airport_graph": "",
+  "enable_simconnect_position_writes": false
+}

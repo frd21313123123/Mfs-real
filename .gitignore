@@ -7,3 +7,7 @@ __pycache__/
 build/
 dist/
 credentials.json
+
+/target/
+/release/
+/launcher-*-results.json

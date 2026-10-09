@@ -1,4 +1,4 @@
-name: Windows prototype EXE
+name: Standalone Windows Rust executables
 on:
   workflow_dispatch:
   pull_request:
@@ -16,32 +16,18 @@ jobs:
     timeout-minutes: 35
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: dtolnay/rust-toolchain@1.90.0
         with:
-          python-version: '3.11'
-          cache: pip
-      - name: Install
-        run: python -m pip install -e . pytest pyinstaller vosk sounddevice pyttsx3
-      - name: Test
-        run: python -m pytest -q
-      - name: Smoke test
-        run: python -m realflow demo --steps 240 --output demo-results.json
-      - name: Integrated ATC smoke
-        run: python -m realflow.atc_demo --steps 600 --output atc-demo-results.json
-      - name: Package prototype UI
-        run: pyinstaller --clean --noconfirm --onefile --windowed --name RealFlowTraffic --add-data "examples/demo_airport.json;examples" realflow_gui.py
-      - name: Package integrated ATC command-line executable
-        run: pyinstaller --clean --noconfirm --onefile --console --name RealFlowTraffic-ATC --add-data "examples/demo_airport.json;examples" --collect-all vosk --collect-all sounddevice --collect-all pyttsx3 --hidden-import realflow.flight_director --hidden-import realflow.pilot_console --hidden-import realflow.cockpit_radio --hidden-import realflow.atc_demo realflow_cli.py
-      - name: Verify packaged CLI starts
-        run: .\dist\RealFlowTraffic-ATC.exe --help
-      - name: Upload Windows EXE and smoke output
-        uses: actions/upload-artifact@v4
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Build, test, smoke and package standalone binaries
+        shell: pwsh
+        run: ./scripts/build.ps1
+      - uses: actions/upload-artifact@v4
         with:
-          name: RealFlowTraffic-Windows-prototype-${{ github.run_number }}
+          name: RealFlow-Windows-x64-${{ github.run_number }}
           path: |
-            dist/RealFlowTraffic.exe
-            dist/RealFlowTraffic-ATC.exe
-            demo-results.json
-            atc-demo-results.json
+            release/RealFlow-Windows-x64.zip
+            release/SHA256SUMS.txt
           if-no-files-found: error
           retention-days: 30

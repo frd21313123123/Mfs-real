@@ -1,247 +1,155 @@
-# RealFlow Traffic 0.2.0 alpha
+# RealFlow Traffic 0.3 — Rust
 
-[![CI](https://github.com/frd21313123123/Mfs-real/actions/workflows/ci.yml/badge.svg)](https://github.com/frd21313123123/Mfs-real/actions/workflows/ci.yml) [![Windows prototype](https://github.com/frd21313123123/Mfs-real/actions/workflows/windows-exe.yml/badge.svg)](https://github.com/frd21313123123/Mfs-real/actions/workflows/windows-exe.yml)
+Нативный прототип трафика и ATC для MSFS 2020: OpenSky ADS-B, синтетические
+самолёты, наземное движение и локальные FSLTL-модели. **Python для запуска и
+сборки не требуется.** Движок и лаунчер написаны на Rust.
 
-**MSFS 2020 traffic research prototype: Hybrid ADS-B + synthetic traffic + local FSLTL aircraft models.**
+Нативная интеграция SimConnect, FSLTL-анимации, COM/XPDR и звук всё ещё требуют
+проверки внутри MSFS 2020. Офлайн-тесты не подтверждают работоспособность в игре.
 
-> **CURRENT STATUS: ENGINE PROTOTYPE, NOT A STABLE MSFS PLUGIN.**
-> All automated tests have run in the offline mock, but **native SimConnect integration, positioning of FSLTL aircraft, taxi animations and airport motion have NOT been tested in MSFS 2020**. Do not call this a working game release yet.
+## Запуск готовой Windows-сборки
 
+Скачайте артефакт `RealFlow-Windows-x64-*` из GitHub Actions после успешного
+выполнения workflow **Standalone Windows Rust executables**. Распакуйте
+`RealFlow-Windows-x64.zip` и откройте `realflow-launcher.exe` или
+`start-launcher.bat`. Держите `realflow.exe` рядом с лаунчером. Rust toolchain,
+Python, pip и отдельный Visual C++ runtime для этих программ не требуются.
 
-## Integrated ATC prototype (0.2.0 alpha)
+Лаунчер редактирует совместимые JSON-профили, запускает диагностику, сканер
+FSLTL, офлайн-превью карты, демо трафика/ATC и экспериментальный MSFS-сеанс.
+Вывод запуска отображается в окне; кнопка остановки даёт движку выполнить
+штатную очистку своих самолётов. Радио пилота принимает текстовые команды.
 
-The experimental [integrated ATC flight director and pilot radio](docs/ATC-INTEGRATED.md) now coordinates synthetic AI airborne clearances, ground pushback/taxi and runway locking, and a continuous human-pilot radio console. Native SimConnect movement and cockpit COM/XPDR must still be verified inside MSFS 2020. LIVE ADS-B traffic is observational, not controllable.
+По умолчанию профиль лаунчера: `%USERPROFILE%\.realflow\config.json`.
+Можно открыть существующий `config.json`. Профиль записывается атомарно;
+относительные пути FSLTL/аэропорта разрешаются относительно профиля.
+Изменения применяются при следующем запуске. Ключи OpenSky в профиль не пишутся.
 
-The bundled Windows Actions artifact is designed to contain two prototypes: the offline Tkinter UI and a console RealFlowTraffic-ATC.exe. Windows packaging must pass CI before any playable release claim. An offline integration smoke is available with: python -m realflow.atc_demo --steps 600.
-
-## What's actually implemented
-
-| Feature | Status |
-|---|---|
-| FSLTL `aircraft.cfg` scan (titles, ICAO type and airline) | Implemented and offline-tested |
-| Detect standard Community folders and read `InstalledPackagesPath` | Implemented, Windows verification pending |
-| Flight model matching, optional ICAO24 aircraft-type CSV | Implemented and offline-tested |
-| OpenSky ADS-B state query with OAuth2 and basic rate-limit protection | Implemented, live network test pending |
-| LIVE and PREDICTED track updates; distance/age filters | Implemented and offline-tested |
-| Synthetic airborne flights, deterministic demo | Implemented and offline-tested |
-| Hybrid prioritization LIVE over synthetic | Implemented and offline-tested |
-| Max airborne 35, max ground 30 | Implemented and offline-tested |
-| Airport graph JSON, shortest-path routing | Implemented and offline-tested |
-| MSFS Scenery Editor source XML -> taxi graph converter | Implemented and offline-tested |
-| Pushback / taxi kinematics, edge and junction locks | Implemented and offline-tested |
-| Runway exclusivity for owned traffic | Implemented and offline-tested |
-| Offline Tkinter control panel and taxiway map | Implemented; GUI smoke test requires a desktop |
-| Native SimConnect connect / create / move / remove via Windows ctypes | Written but **not game-tested** |
-| Clean shutdown for owned aircraft | Tested in mock; native test pending |
-| Collision prediction for all other AI, player aircraft | Not implemented |
-| Pull airport taxi geometry directly from compiled BGL or SimConnect facilities | Not implemented |
-| Full animated flight phases, true takeoff and landing in game | Not implemented |
-| Complete gate-to-gate timetable and dispatch | Not implemented |
-| A true Windows installer, signed release | Not implemented |
-
-These distinctions matter. A working offline engine is not proof that the game's simobject physics / FSLTL animations will behave correctly under frequent position writes.
-
-## Requirements
-
-- Windows 10/11 (64-bit), MSFS 2020, **FSLTL Traffic Base Models** installed via FlyByWire installer.
-- Python 3.10 or newer, with Tkinter (included with standard Windows Python distribution).
-- `SimConnect.dll` accessible through the Windows DLL search path (installed with a legitimate simulator runtime / SDK; **not bundled** here).
-- Access to the OpenSky API for online mode. Optional OAuth2 API client credentials.
-
-### Run without MSFS (recommended first)
-
-Extract the archive, open a terminal in the extracted `RealFlowTraffic` directory, run:
+CLI работает самостоятельно, из любой папки. Вымышленная демонстрационная
+геометрия встроена в бинарник:
 
 ```powershell
-py -3 -m realflow doctor
-py -3 -m realflow demo --steps 600 --output demo-results.json
-py -3 -m realflow.ui
+.\realflow.exe doctor
+.\realflow.exe --config config.json demo --steps 600 --output demo-results.json
+.\realflow.exe atc-demo --steps 600 --output atc-demo-results.json
+.\realflow.exe scan --fsltl "D:\MSFS\Community\fsltl-traffic-base"
 ```
 
-Or double-click `run-demo.bat` / `start-ui.bat`. For an experimental real-simulator connection, use `start-msfs-experimental.bat` after reading the safety notes below.
+Демо никогда не создаёт самолёты в MSFS. На Linux доступны CLI, лаунчер и
+офлайн-движок; SimConnect и нативный голосовой ввод/вывод требуют Windows.
 
-The demo runs without access to any real MSFS files and uses **dummy aircraft model titles exclusively within MockBridge**. It never attempts to load the dummy titles into MSFS. The map in the preview is **fictional**.
+## Сборка из исходников
 
-### Detect local FSLTL models
+Фиксированная версия Rust: **1.90.0**, зависимости зафиксированы в `Cargo.lock`.
+Установите Rust через официальный rustup. Для Windows выберите MSVC toolchain
+и установите Visual Studio 2022 C++ Build Tools с Windows SDK.
 
 ```powershell
-py -3 -m realflow doctor
-py -3 -m realflow scan --limit 40
+rustup target add x86_64-pc-windows-msvc
+.\scripts\build.ps1
 ```
 
-Specify path manually when needed:
+Скрипт выполняет форматирование, Clippy, Rust-тесты, release-сборку, запуск
+готовых бинарников и упаковку. Результат: `release/RealFlow-Windows-x64.zip`
+и `release/SHA256SUMS.txt`. MSVC собирается с `+crt-static`; программы не
+зависят от Python или распространяемого отдельно VC runtime. Системные
+Windows DLL, драйверы графики и MSFS runtime остаются необходимыми.
+
+Linux (для сборки: C-компилятор, pkg-config, OpenSSL development headers;
+для графического запуска: X11/Wayland, OpenGL и desktop file portal):
+
+```bash
+# Ubuntu/Debian, development dependencies:
+sudo apt-get install build-essential pkg-config libssl-dev libxkbcommon-dev libwayland-dev libgl1-mesa-dev
+./scripts/build.sh
+# or:
+cargo test --locked --all-targets
+cargo build --release --locked --bins
+./target/release/realflow-launcher
+```
+
+Для серверной/CLI-сборки без графических зависимостей:
+`cargo build --release --locked --no-default-features --bin realflow`.
+GitHub Actions автоматически публикует артефакты `RealFlow-Linux-x64-*`
+для Linux и `RealFlow-Windows-x64-*` для Windows при push и pull request.
+Windows-сборка также запускается вручную через workflow_dispatch.
+
+Linux-бинарники используют системные libc/OpenSSL/графические библиотеки;
+пакет Linux не заявляется универсальной статической сборкой.
+
+## MSFS 2020
+
+Требуются Windows x64, уже запущенный MSFS 2020, установленный FSLTL Traffic
+Base Models и легитимный `SimConnect.dll` из runtime/SDK. DLL и модели не
+включены в архив. Конкурирующие AI-инжекторы следует отключить на время теста.
 
 ```powershell
-py -3 -m realflow scan --fsltl "D:\\MSFS\\Community\\fsltl-traffic-base"
+.\realflow.exe --config config.json run --bridge simconnect --fsltl "D:\MSFS\Community\fsltl-traffic-base" --duration 60
 ```
 
-The scanner does not edit, copy or redistribute any installed FSLTL asset. It finds `aircraft.cfg` files and reads `[FLTSIM.N]` titles.
+Запись позиций включается только явным `--allow-motion` (либо соответствующим
+параметром лаунчера). Для наземного движения передайте проверенный граф:
+`--airport airport.json --allow-motion`. Граф с меткой FICTIONAL отвергается
+в нативном режиме. Никакие dummy-модели не подставляются при запуске MSFS.
+Ctrl+C, `/quit`, таймер или кнопка остановки лаунчера завершают сеанс с очисткой.
 
-### Use OpenSky real flight positions
+## OpenSky, данные и аэропорт
 
-1. Optionally create an OpenSky OAuth2 API client in your own OpenSky account.
-2. Set `OPENSKY_CLIENT_ID` and `OPENSKY_CLIENT_SECRET` in environment variables. Avoid storing credentials in the repository.
-3. To **test the tracking without touching MSFS**, start:
+OpenSky поддерживает анонимный доступ и OAuth2 через `OPENSKY_CLIENT_ID` /
+`OPENSKY_CLIENT_SECRET`. HTTPS использует проверку сертификатов и системный
+proxy; опрос выполняется в отдельном потоке, с интервалом ≥60 секунд,
+повторным получением токена и задержкой после 401/403/429.
+Реальные ADS-B самолёты наблюдаются и экстраполируются, ATC ими не управляет.
+Для подбора типа можно передать `--metadata aircraft.csv` с колонками
+`icao24,icao_type`. Файлы самолётов FSLTL только читаются.
 
 ```powershell
-py -3 -m realflow run --bridge mock --lat 57.914 --lon 56.02 --duration 300
+.\realflow.exe convert-airport --xml examples/sample_airport_source.xml --output airport.json
+.\realflow.exe atc update
+.\realflow.exe atc frequencies --icao UUEE
+.\realflow.exe atc session --icao UUEE --destination ULLI --callsign AFL101 --runway 24L --com1 121.900
 ```
 
-This needs installed FSLTL models for model matching. Anonymous access may work under reduced API limits. The client defaults to a minimum 120-second polling interval and handles common 401/429 errors. OpenSky doesn't guarantee flight destination or ICAO aircraft type in its `states/all` data.
+Конвертер принимает исходный scenery XML, не compiled BGL. Геометрию необходимо
+проверить в игре. OurAirports загружается только явно командой `atc update`;
+это неофициальные community-данные, частоты необходимо сверять с AIP.
+Неизвестные частоты не выдумываются. Для собственного CSV: `atc --csv file.csv …`.
 
-To improve type matching, create an aircraft database CSV:
+## ATC и голос без Python
 
-```csv
-icao24,icao_type
-abcdef,A320
-123abc,B738
-```
+`run --atc-csv airport-frequencies.csv --airport airport.json --atc-airborne`
+координирует собственные наземные и воздушные AI через общий контроллер полос.
+Параметры `--pilot-callsign`, `--pilot-destination`, `--pilot-runway` добавляют
+радио пилота; COM1/COM2/XPDR читаются из SimConnect. На mock используйте
+`--atc-monitor-frequency 121.900`. `/status`, `/tune 121.900` (offline), `/quit`.
 
-Then add `--metadata "C:\\flightdata\\aircraft.csv"` to the run command. Exact ICAO24 IDs and types must come from a legitimate metadata source.
+`--atc-voice` использует встроенный **Windows SAPI**, без платных API.
+Распознавание речи включается через `--pilot-voice-model` либо
+`atc session --voice --vosk-model`. Нужны локальная английская 16 kHz модель
+Vosk и официальная нативная `libvosk.dll` со всеми её companion DLL рядом с
+`realflow.exe` (или путь `VOSK_DLL`). Они не скачиваются автоматически.
+Пустой Enter записывает 6 секунд PCM16 через Windows multimedia API и передаёт
+звук локальной Vosk. Звук не отправляется в облако. Голос не заменяет внутренний
+MSFS ATC audio bus, не подключается к VATSIM и требует проверки на Windows.
 
-### Convert airport editor XML to taxi graph
+## Настройки и ограничения
 
-```powershell
-py -3 -m realflow convert-airport --xml "C:\\AirportProject\\airport.xml" --icao YOUR --output airport.json
-```
+Сохранены поля исходного JSON: `mode`, `airborne_limit` (0–35), `ground_limit`
+(0–30), `sync_real_flights`, `fetch_seconds`, `max_radius_km`, `fsltl_path`,
+`airport_graph`, `enable_simconnect_position_writes`, `realistic_taxi`,
+`runway_control`, `fps_target`. Последние три сохраняются для совместимости,
+но не переключают поведение движка: блокировки полос/дорожек работают всегда;
+целевой FPS не управляет производительностью игры. Это отмечено в лаунчере.
 
-The converter accepts source XML containing `<Airport>`, `<TaxiwayPoint>`, `<TaxiwayParking>` and `<TaxiwayPath>` as described in MSFS 2020 scenery SDK documentation. XML source **is not the same as compiled BGL**. You must compare the resulting graph to the airport in the simulator before using it; XML import alone does not verify safety, elevations, obstacle clearance or runway usage. Some projects can require edits to the generated JSON.
+Поведенческие Rust-тесты проверяют лимиты, приоритет LIVE, устаревшие данные,
+маршруты, разделение наземных самолётов, конфликты полос, радио/readback,
+go-around, ограничения кинематики и передачу ground↔air с сохранением ID.
+CI выполняет тесты на Linux/Windows и запускает скомпилированные демо.
+Эти проверки не заменяют MSFS-in-the-loop испытания.
 
-### Experimental connection to MSFS 2020
+Ранее написанный Python-код и тесты сохранены в `legacy/python` как reference
+для переноса; они не участвуют в нативной сборке или запуске.
 
-**Use this only after checking the SimConnect SDK and with safe scenarios.**
-
-1. Start the game and begin a flight.
-2. Install FSLTL Base Models. Disable overlapping injected AI traffic, simulator AI traffic and ground density in simulator settings.
-3. Ensure the native `SimConnect.dll` from a legitimate source can be loaded.
-4. Run an injection trial (position writes off by default):
-
-```powershell
-py -3 -m realflow run --bridge simconnect --fsltl "D:\\MSFS\\Community\\fsltl-traffic-base" --duration 60
-```
-
-To **experiment** with applying object positions in real time, add `--allow-motion`. This is **not** a verified or stable integration. It may cause nonphysical movement or visible snaps. Test on a copy of your MSFS configuration, preferably with only one or two AI aircraft.
-
-For ground taxiing, add `--airport YOUR_VERIFIED_AIRPORT.json --allow-motion`. The bundled `examples/demo_airport.json` is refused in native game mode because its geometry is fictional.
-
-### Default user configuration (`config.json`)
-
-```json
-{
-  "mode": "hybrid",
-  "airborne_limit": 35,
-  "ground_limit": 30,
-  "realistic_taxi": true,
-  "runway_control": true,
-  "sync_real_flights": true,
-  "fetch_seconds": 120,
-  "max_radius_km": 120.0,
-  "fps_target": 35,
-  "fsltl_path": "",
-  "airport_graph": "",
-  "enable_simconnect_position_writes": false
-}
-```
-
-The source is built with **the exact requested 35/30 Hybrid configuration**. Some settings, such as `fps_target` and the boolean feature switches (currently always-on in the prototype engines), are persisted but not yet hooked to an in-simulator performance monitor. Position writes can only be enabled with the experimental CLI flag at present.
-
-## Unit tests
-
-```powershell
-py -3 -m pip install pytest
-py -3 -m pytest -q
-```
-
-Tests cover model parsing, model matching, aircraft metadata enrichment, OpenSky response mapping, airway dead-reckoning, limit enforcement, pathfinding, parking/taxi/runway transitions, converging taxiways, occupied runways, airport XML import, simulated bridge cleanup and native ABI structure sizes. An MSFS-in-the-loop integration test is still needed.
-
-## Windows executable build
-
-The [Windows prototype EXE workflow](https://github.com/frd21313123123/Mfs-real/actions/workflows/windows-exe.yml) runs automatically when `main` changes and can also be started manually from the **Actions** tab. After a successful run, download the `RealFlowTraffic-Windows-prototype-*` artifact containing `RealFlowTraffic.exe` and demo results. Its first GitHub-hosted Windows build succeeded on 2026-10-09. This EXE is an **experimental offline UI prototype**, not a verified live-MSFS release. SimConnect binaries and FSLTL models are not bundled.
-
-## Architecture
-
-```text
-OpenSky API / local metadata
-         |
-    live.py + fleet.py --------+------- synthetic.py
-                               |
-                        manager.py  (Hybrid)
-                               |
-                   +-----------+-----------+
-                   |                       |
-              ground.py                bridge.py
-                   |                       |
-             airport.py              simconnect.py
-                   |                  (Windows native)
-           runway.py / XML converter         |
-                   +-----------------------> MSFS 2020
-
-fsltl.py -> ModelMatcher -> correct local aircraft.cfg 'title'
-```
-
-For planned flight dynamics, weather-driven runway selection, runway crossings, native airport geometry, passenger gates and true ATC integration, see `docs/ROADMAP.md`.
-
-## References and rights
-
-- MSFS 2020 SimConnect: https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/SimConnect_API_Reference.htm
-- `AICreateNonATCAircraft`: https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/AI_Object/SimConnect_AICreateNonATCAircraft.htm
-- `SetDataOnSimObject`: https://docs.flightsimulator.com/html/Programming_Tools/SimConnect/API_Reference/Events_And_Data/SimConnect_SetDataOnSimObject.htm
-- MSFS taxiway XML: https://docs.flightsimulator.com/html/Content_Configuration/Environment/Airports_And_Facilities/Taxiway_Definition_Properties.htm
-- OpenSky REST API and OAuth2: https://github.com/openskynetwork/opensky-api/blob/master/docs/free/rest.rst
-- FSLTL base models: https://github.com/FSLiveTrafficLiveries/base
-
-This repository contains independently written prototype code only. No Microsoft SimConnect runtime, FSLTL aircraft models, liveries or proprietary airport scenery are redistributed. Use OpenSky according to its API terms and access credits.
-
-
-## Experimental ATC: voice, cockpit COM and RealFlow AI
-
-This ATC module provides a local, rule-based IFR radio simulation. **It does not connect to VATSIM or to any real controller**, and it is not a real-world aviation navigation aid.
-
-### Real-world frequency database
-
-Install the optional community-maintained OurAirports frequency list:
-
-    py -3 -m realflow.atc_cli update
-    py -3 -m realflow.atc_cli frequencies --icao UUEE
-
-The downloaded file is stored in the current user's home directory under .realflow/airport-frequencies.csv. It is downloaded only on explicit request. Published frequencies are community records, not guaranteed current ATC services. Verify them against official AIP/NOTAM and airport charts. Missing frequencies are NOT fabricated, and airport sectors are not selected automatically.
-
-### Cockpit radios, not the transponder
-
-Use COM1/COM2 for voice communication. Use the transponder for the **squawk code only**. COM1 and COM2 active frequencies and selected transmitting radio, plus XPDR code, are read through experimental MSFS 2020 SimConnect variables.
-
-Start MSFS 2020, then run this ATC-only console:
-
-    py -3 -m realflow.atc_cli session --icao UUEE --destination ULLI --callsign AFL101 --runway 24L --cockpit
-
-Tune the station's frequency using the actual cockpit COM panel. Select COM1 or COM2 transmit on the aircraft audio panel. Request clearance, read back assigned altitude and squawk, enter squawk on the physical cockpit transponder, then switch frequencies on the COM panel after handoff. These are **simulated** clearances.
-
-For a typed, offline example without MSFS, replace --cockpit with --com1 121.900, using a published station frequency for the selected airport.
-
-### Real microphone voice, optional, with no paid APIs
-
-Install voice dependencies, and separately download a 16kHz English Vosk recognition model:
-
-    py -3 -m pip install vosk sounddevice pyttsx3
-    py -3 -m realflow.atc_cli session --icao UUEE --destination ULLI --callsign AFL101 --runway 24L --cockpit --voice --vosk-model "C:\models\vosk-model-en-us"
-
-Press Enter in the console to record approximately six seconds from the actual microphone (one push-to-talk message). Vosk performs offline speech recognition; pyttsx3 uses the Windows speaker/audio device for dispatcher speech. Pilot transmissions do not leave the PC. The recognition model and MSFS are not included in the project. Speech and voice quality must be validated on Windows.
-
-### AI pilots and ATC are linked to the Ground Engine
-
-RealFlow-owned AI ground traffic automatically exchanges request, clearance and readback messages before taxiway/runway operations. A shared RunwayController prevents issuing a conflicting runway operation to another managed plane. Missing controller frequencies do not silently turn into fictitious stations.
-
-Offline dialogue test (fictional airport graph, not MSFS movement):
-
-    py -3 -m realflow.atc_cli session --icao UUEE --destination ULLI --callsign AFL101 --runway 24L --ai-demo
-
-Use /tick 120 and /status to observe AI conversations and radio state. AI chatter is shown only when tuned to the corresponding frequency. The fictional airport geometry is never used for live game movement.
-
-Experimental live integration, using FSLTL and a VERIFIED custom airport graph:
-
-    py -3 -m realflow run --bridge simconnect --airport "C:\realflow\UUEE_verified.json" --atc-csv "C:\realflow\airport-frequencies.csv" --allow-motion
-
-**Known restrictions:** COM frequency readings, BCO16/transponder values, third-party cockpit audio panels, taxi/landing animations and native SimConnect controls need in-game verification. Bots currently comply with RealFlow ground/runway permissions, but synthetic aircraft in flight do not yet comply with ATC altitude, heading or spacing instructions. A separate ATC voice console is used; the in-sim ATC radio audio channel is not directly replaced. Real ADS-B aircraft are not controllable and do not actually receive clearances. This remains an experimental prototype, not a stable game release.
-
-
-Add the optional switch **--atc-voice** to speak ground/tower traffic over Windows speakers. Radio audio is filtered by the active COM transmit frequency read from the cockpit and runs off the simulation thread. Install pyttsx3 first. For a headless mock, --atc-monitor-frequency 118.700 can provide the monitored channel. This does not send audio over VATSIM or use the simulator's internal audio bus.
+MIT. Microsoft SimConnect runtime, FSLTL assets, Vosk DLL и модели не
+перераспределяются. Это экспериментальная симуляция, не авиационное средство
+навигации и не проверенный игровой релиз.

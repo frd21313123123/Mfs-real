@@ -1,0 +1,34 @@
+{
+  "_NOTICE": "FICTIONAL TEST GRAPH. NOT ACCURATE NAVIGATION DATA. DO NOT ENABLE FOR REAL MSFS GROUNDMOTION.",
+  "icao": "TEST",
+  "nodes": [
+    {"id":"GATE_A","lat":47.45000,"lon":-122.31000,"alt_ft":450,"kind":"gate"},
+    {"id":"PUSH_A","lat":47.45030,"lon":-122.30980,"alt_ft":450},
+    {"id":"JUNCTION_A","lat":47.45070,"lon":-122.30950,"alt_ft":450},
+    {"id":"JUNCTION_B","lat":47.45120,"lon":-122.30950,"alt_ft":450},
+    {"id":"GATE_B","lat":47.45000,"lon":-122.30920,"alt_ft":450,"kind":"gate"},
+    {"id":"PUSH_B","lat":47.45030,"lon":-122.30920,"alt_ft":450},
+    {"id":"HOLD_R","lat":47.45170,"lon":-122.30950,"alt_ft":450,"kind":"hold"},
+    {"id":"RUNWAY_ENTRY","lat":47.45200,"lon":-122.30950,"alt_ft":450,"kind":"runway"},
+    {"id":"RUNWAY_EXIT","lat":47.45580,"lon":-122.30950,"alt_ft":450,"kind":"runway"},
+    {"id":"HOLD_ARR","lat":47.45610,"lon":-122.30950,"alt_ft":450,"kind":"hold"},
+    {"id":"ARR_JUNCTION","lat":47.45610,"lon":-122.30840,"alt_ft":450},
+    {"id":"ARR_RETURN","lat":47.45070,"lon":-122.30840,"alt_ft":450}
+  ],
+  "edges": [
+    {"src":"GATE_A","dst":"PUSH_A","speed_kt":3,"kind":"pushback"},
+    {"src":"GATE_B","dst":"PUSH_B","speed_kt":3,"kind":"pushback"},
+    {"src":"PUSH_A","dst":"JUNCTION_A","speed_kt":7,"bidirectional":true},
+    {"src":"PUSH_B","dst":"JUNCTION_A","speed_kt":7,"bidirectional":true},
+    {"src":"JUNCTION_A","dst":"JUNCTION_B","speed_kt":10,"bidirectional":true},
+    {"src":"JUNCTION_B","dst":"HOLD_R","speed_kt":10,"bidirectional":true},
+    {"src":"HOLD_R","dst":"RUNWAY_ENTRY","speed_kt":12,"kind":"runway","runway":"TEST/18"},
+    {"src":"RUNWAY_ENTRY","dst":"RUNWAY_EXIT","speed_kt":120,"kind":"runway","runway":"TEST/18"},
+    {"src":"RUNWAY_EXIT","dst":"HOLD_ARR","speed_kt":10},
+    {"src":"HOLD_ARR","dst":"ARR_JUNCTION","speed_kt":10,"bidirectional":true},
+    {"src":"ARR_JUNCTION","dst":"ARR_RETURN","speed_kt":12,"bidirectional":true},
+    {"src":"ARR_RETURN","dst":"JUNCTION_A","speed_kt":9,"bidirectional":true},
+    {"src":"JUNCTION_A","dst":"PUSH_B","speed_kt":7},
+    {"src":"PUSH_B","dst":"GATE_B","speed_kt":4}
+  ]
+}

@@ -1,30 +1,66 @@
-name: CI
+name: Native Rust CI
 on:
   push:
   pull_request:
+permissions:
+  contents: read
 jobs:
-  tests:
-    runs-on: ${{ matrix.os }}
+  validate:
     strategy:
+      fail-fast: false
       matrix:
-        os: [ubuntu-latest, windows-latest]
-        python-version: ['3.11', '3.13']
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-gnu
+          - os: windows-latest
+            target: x86_64-pc-windows-msvc
+    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-python@v5
+      - uses: dtolnay/rust-toolchain@1.90.0
         with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install
-        run: python -m pip install -e . pytest
-      - name: Test
-        run: python -m pytest -q
-      - name: Smoke demo
-        run: python -m realflow demo --steps 240 --output demo-results.json
-      - name: Integrated ATC/AI smoke demo
-        run: python -m realflow.atc_demo --steps 600 --output atc-demo-results.json
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Linux development libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libssl-dev libxkbcommon-dev libwayland-dev libgl1-mesa-dev xvfb
+      - run: cargo fmt --all -- --check
+      - run: cargo clippy --locked --all-targets --target ${{ matrix.target }} -- -D warnings
+      - run: cargo test --locked --all-targets --target ${{ matrix.target }}
+      - run: cargo test --locked --no-default-features --target ${{ matrix.target }}
+      - run: cargo build --locked --release --bins --target ${{ matrix.target }}
+      - name: Native CLI smoke (Linux)
+        if: runner.os == 'Linux'
+        run: |
+          target/x86_64-unknown-linux-gnu/release/realflow doctor
+          target/x86_64-unknown-linux-gnu/release/realflow demo --steps 240 --output target/demo-results.json
+          target/x86_64-unknown-linux-gnu/release/realflow atc-demo --steps 600 --output target/atc-demo-results.json
+      - name: Native CLI smoke (Windows)
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: |
+          & .\target\x86_64-pc-windows-msvc\release\realflow.exe doctor
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & .\target\x86_64-pc-windows-msvc\release\realflow.exe demo --steps 240 --output target/demo-results.json
+          if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
+          & .\target\x86_64-pc-windows-msvc\release\realflow.exe atc-demo --steps 600 --output target/atc-demo-results.json
+          exit $LASTEXITCODE
+      - name: Package standalone Linux binaries
+        if: runner.os == 'Linux'
+        run: ./scripts/package-linux.sh "$PWD/target/x86_64-unknown-linux-gnu/release"
+      - uses: actions/upload-artifact@v4
+        if: runner.os == 'Linux'
+        with:
+          name: RealFlow-Linux-x64-${{ github.run_number }}
+          path: |
+            release/RealFlow-Linux-x64.tar.gz
+            release/SHA256SUMS.txt
+          if-no-files-found: error
+          retention-days: 30
       - uses: actions/upload-artifact@v4
         with:
-          name: demo-results-${{ matrix.os }}-${{ matrix.python-version }}
+          name: native-smoke-${{ runner.os }}
           path: |
-            demo-results.json
-            atc-demo-results.json
+            target/demo-results.json
+            target/atc-demo-results.json
+          if-no-files-found: error
