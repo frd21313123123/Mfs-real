@@ -1,0 +1,76 @@
+name: Publish compiled releases
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: read
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check release version
+        shell: bash
+        env:
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          version=$(sed -n 's/^version = "\([^"]*\)"/\1/p' Cargo.toml | head -n 1)
+          test "$RELEASE_TAG" = "v$version"
+      - uses: dtolnay/rust-toolchain@1.90.0
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - name: Linux development libraries
+        if: runner.os == 'Linux'
+        run: sudo apt-get update && sudo apt-get install -y pkg-config libssl-dev libxkbcommon-dev libwayland-dev libgl1-mesa-dev
+      - name: Build, test and package Linux
+        if: runner.os == 'Linux'
+        run: ./scripts/build.sh
+      - name: Build, test and package Windows
+        if: runner.os == 'Windows'
+        shell: pwsh
+        run: ./scripts/build.ps1
+      - uses: actions/upload-artifact@v4
+        with:
+          name: release-${{ runner.os }}
+          path: |
+            release/*.zip
+            release/*.tar.gz
+          if-no-files-found: error
+          retention-days: 30
+  publish:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: release-*
+          path: release
+          merge-multiple: true
+      - name: Publish archives and checksums
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+        run: |
+          set -euo pipefail
+          cd release
+          test -s RealFlow-Windows-x64.zip
+          test -s RealFlow-Linux-x64.tar.gz
+          sha256sum RealFlow-Windows-x64.zip RealFlow-Linux-x64.tar.gz > SHA256SUMS.txt
+          sha256sum --check SHA256SUMS.txt
+          if gh release view "$RELEASE_TAG" >/dev/null 2>&1; then
+            gh release upload "$RELEASE_TAG" RealFlow-Windows-x64.zip RealFlow-Linux-x64.tar.gz SHA256SUMS.txt --clobber
+          else
+            gh release create "$RELEASE_TAG" RealFlow-Windows-x64.zip RealFlow-Linux-x64.tar.gz SHA256SUMS.txt --verify-tag --title "RealFlow $RELEASE_TAG" --generate-notes
+          fi

@@ -1,4 +1,4 @@
-# RealFlow Traffic 0.3 — Rust
+# RealFlow Traffic 0.3.1 — Rust
 
 Нативный прототип трафика и ATC для MSFS 2020: OpenSky ADS-B, синтетические
 самолёты, наземное движение и локальные FSLTL-модели. **Python для запуска и
@@ -9,8 +9,8 @@
 
 ## Запуск готовой Windows-сборки
 
-Скачайте артефакт `RealFlow-Windows-x64-*` из GitHub Actions после успешного
-выполнения workflow **Standalone Windows Rust executables**. Распакуйте
+Скачайте `RealFlow-Windows-x64.zip` со страницы
+[GitHub Releases](https://github.com/frd21313123123/Mfs-real/releases/latest). Распакуйте
 `RealFlow-Windows-x64.zip` и откройте `realflow-launcher.exe` или
 `start-launcher.bat`. Держите `realflow.exe` рядом с лаунчером. Rust toolchain,
 Python, pip и отдельный Visual C++ runtime для этих программ не требуются.
@@ -37,6 +37,22 @@ CLI работает самостоятельно, из любой папки. �
 
 Демо никогда не создаёт самолёты в MSFS. На Linux доступны CLI, лаунчер и
 офлайн-движок; SimConnect и нативный голосовой ввод/вывод требуют Windows.
+
+## Скачать модели трафика через лаунчер
+
+Откройте «Скачать модели трафика» под полем FSLTL и нажмите
+«Скачать FlyByWire Installer» (Windows). Выберите место сохранения: скачивание
+выполняется в фоне с отображением прогресса и отменой, файл проверяется по
+SHA-512 из официального релиза. Установщик не запускается автоматически.
+Нажмите «Запустить скачанный установщик» и установите в нём **FSLTL Traffic
+Base Models**. Затем вернитесь в RealFlow и нажмите «Найти установленные
+модели и сохранить путь». Если Community находится в нестандартной папке,
+выберите `fsltl-traffic-base` вручную и сохраните профиль.
+
+Для скачивания нужен интернет. При ошибке доступна ссылка на официальную
+страницу. Модели распространяет и устанавливает FlyByWire Installer; RealFlow
+не содержит копию пакета FSLTL и не запускает сторонний установщик без нажатия
+кнопки пользователем. Linux предоставляет ссылку; интеграция MSFS требует Windows.
 
 ## Сборка из исходников
 
@@ -73,6 +89,12 @@ cargo build --release --locked --bins
 GitHub Actions автоматически публикует артефакты `RealFlow-Linux-x64-*`
 для Linux и `RealFlow-Windows-x64-*` для Windows при push и pull request.
 Windows-сборка также запускается вручную через workflow_dispatch.
+
+При отправке тега `v<версия из Cargo.toml>` workflow **Publish compiled releases**
+собирает и проверяет обе платформы, затем публикует Windows ZIP, Linux tar.gz
+и общий `SHA256SUMS.txt` в GitHub Releases. Например, для версии 0.3.0:
+`git tag v0.3.0` и `git push origin v0.3.0`. Релиз появляется только после
+успешной сборки обеих платформ.
 
 Linux-бинарники используют системные libc/OpenSSL/графические библиотеки;
 пакет Linux не заявляется универсальной статической сборкой.
