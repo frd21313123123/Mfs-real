@@ -51,3 +51,61 @@ class OfflineVoice:
             return
         self.engine.say(text)
         self.engine.runAndWait()
+
+
+class RadioSpeaker:
+    """Non-blocking, opt-in local TTS for AI radio messages.
+
+    Speech work stays off the SimConnect/taxi movement thread. Radio monitoring
+    filtering is performed by the caller *before* queueing a message.
+    """
+    def __init__(self):
+        from queue import Queue
+        from threading import Thread
+        try:
+            import pyttsx3  # noqa: F401
+        except ImportError as exc:
+            raise VoiceUnavailable("Install pyttsx3 for AI voice: pip install pyttsx3") from exc
+        self.queue = Queue(maxsize=64)
+        self._closed = False
+        self._worker = Thread(target=self._play, name="realflow-atc-tts", daemon=True)
+        self._worker.start()
+
+    def _play(self):
+        import pyttsx3
+        try:
+            engine = pyttsx3.init()
+            engine.setProperty("rate", 166)
+        except Exception:
+            return
+        while True:
+            message = self.queue.get()
+            if message is None:
+                return
+            try:
+                engine.say(message)
+                engine.runAndWait()
+            except Exception:
+                # An unavailable audio device should not interrupt traffic.
+                continue
+
+    def speak(self, message: str):
+        from queue import Full
+        if self._closed or not message:
+            return
+        try:
+            self.queue.put_nowait(message)
+        except Full:
+            # Avoid unbounded chatter backlogs and simulator lag.
+            return
+
+    def close(self):
+        from queue import Full
+        if self._closed:
+            return
+        self._closed = True
+        try:
+            self.queue.put_nowait(None)
+        except Full:
+            # The daemon thread will be reclaimed at process exit.
+            pass
